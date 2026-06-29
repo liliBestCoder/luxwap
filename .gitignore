@@ -51,6 +51,7 @@ target/
 [Dd]ebug/
 [Rr]elease/
 [Bb]in/
+!RuoYi/bin/
 [Oo]bj/
 .vs/
 *.suo
@@ -104,9 +105,11 @@ secrets.yml
 **/traffic_map.json
 
 # ============================================================
-# SQL dumps
+# SQL dumps (keep schema/migration scripts)
 # ============================================================
-*.sql
+xray_partner_full.sql
+**/dump*.sql
+**/*_backup*.sql
 
 # ============================================================
 # Temporary / tool directories
