@@ -1,0 +1,37 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
+*.iml
+*.lock
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IDE
+.idea/
+.vscode/
+.vs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+flutter-*.log
+
+# Project specific
+build.bat
+dhcp_server.py
+unlocker428/
+.reasonix/
+BOOT-INF/
+com/
+*.class
+speedtest-debug.json
+line-list-debug.json
+user-info-debug.json
+flutter_*.png
+wpf_screen.png

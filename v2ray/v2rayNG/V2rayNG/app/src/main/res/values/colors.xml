@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPing">#009966</color>
+    <color name="colorPingRed">#FF0099</color>
+    <color name="colorConfigType">#f97910</color>
+
+    <color name="color_fab_active">#f97910</color>
+    <color name="color_fab_inactive">#9C9C9C</color>
+    <color name="color_fab_inactive_new">#D9CCCCCC</color>
+    <color name="color_secondary">#727272</color>
+    <color name="divider_color_light">#E0E0E0</color>
+
+    <color name="colorPrimary">#F5F5F5</color>
+    <color name="colorAccent">#000000</color>
+
+
+    <!-- 顶部 banner 渐变蓝色 -->
+    <color name="bannerBlueStart">#3B70FF</color>
+    <color name="bannerBlueEnd">#1B4DD8</color>
+
+    <!-- 连接状态卡片绿色 -->
+    <color name="connectGreen">#26C281</color>
+
+    <!-- 文本主次色 -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+
+    <!-- 通用背景或图标色（可选） -->
+    <color name="background">#FFFFFF</color>
+    <color name="icon_tint">#424242</color>
+
+    <!-- 其他已有颜色（可保留默认） -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+
+    <color name="green">#009966</color>
+
+    <color name="blue">#2196F3</color>
+    <color name="gray">#DADDE2</color>
+
+    <color name="card_default_color">#F5F5F5</color> <!-- 淡灰色背景 -->
+    <color name="card_selected_color">#2196F3</color> <!-- 选中时蓝色 -->
+
+    <color name="blue_200">#2C6CFC</color>
+    <color name="blue_100">#E0F0FF</color>
+    <color name="blue_330099FF">#330099FF</color>
+    <color name="color_fab_active_new">#29CF67</color>
+</resources>

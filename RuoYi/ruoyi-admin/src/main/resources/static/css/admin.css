@@ -1,0 +1,157 @@
+/* Admin Tabs */
+.tab-navigation {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+.settings-tab {
+    padding: 12px 24px;
+    border: none;
+    background: var(--secondary-bg);
+    color: var(--text-secondary);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.settings-tab:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+}
+.settings-tab.active {
+    background: var(--accent-color);
+    color: #fff;
+    box-shadow: var(--shadow-md);
+}
+
+/* Admin Tab Content */
+.main-tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+.main-tab-content.active {
+    display: block;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Payment Gateway Grid */
+.payment-gateway {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: grid;
+    gap: 20px;
+    margin-top: 20px;
+    align-items: stretch;
+}
+@media (max-width: 1024px) {
+    .payment-gateway { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+    .payment-gateway { grid-template-columns: 1fr; }
+}
+.gateway-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    background: var(--primary-bg);
+    transition: all var(--transition-speed);
+}
+.gateway-card:hover {
+    border-color: var(--accent-color);
+    box-shadow: var(--shadow-md);
+}
+.gateway-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+.gateway-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--border-radius);
+    background: var(--secondary-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+.gateway-icon.alipay { background: rgba(24, 144, 255, 0.1); color: #1890ff; }
+.gateway-icon.wechat { background: rgba(7, 193, 96, 0.1); color: #07c160; }
+.gateway-icon.stripe { background: rgba(99, 91, 255, 0.1); color: #635bff; }
+.gateway-icon.paypal { background: rgba(0, 48, 135, 0.1); color: #003087; }
+.gateway-icon.circle { background: rgba(55, 125, 255, 0.1); color: #377dff; }
+
+/* Modal */
+.modal {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,.5);
+    z-index: 1000; display: none;
+    align-items: center; justify-content: center;
+}
+.modal-content {
+    background: var(--primary-bg);
+    border-radius: var(--border-radius);
+    max-width: 600px; width: 90%;
+    max-height: 80vh; overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+}
+.modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px; border-bottom: 1px solid var(--border-color);
+}
+.modal-close {
+    font-size: 24px; font-weight: bold; cursor: pointer; color: var(--text-secondary);
+}
+.modal-close:hover { color: var(--text-primary); }
+.modal-body { padding: 20px; }
+.modal-footer {
+    display: flex; gap: 10px; justify-content: flex-end;
+    padding: 20px; border-top: 1px solid var(--border-color);
+}
+
+/* CSV 预览与上传 */
+.csv-preview {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-top: 10px;
+}
+.csv-table { width: 100%; border-collapse: collapse; }
+.csv-table th, .csv-table td {
+    padding: 8px 12px; text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 12px;
+}
+.csv-table th { background: var(--secondary-bg); font-weight: 500; }
+.file-upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px; text-align: center; cursor: pointer;
+    transition: all var(--transition-speed);
+}
+.file-upload-area:hover { border-color: var(--accent-color); background: var(--hover-bg); }
+.file-upload-area.dragover { border-color: var(--accent-color); background: var(--active-bg); }
+
+/* a11y */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}

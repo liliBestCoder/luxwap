@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.XrayInnerUserMapper">
+    <resultMap id="BaseResultMap" type="com.ruoyi.system.domain.XrayInnerUser">
+        <id column="id" property="id"/>
+        <id column="user_id" property="userId"/>
+        <result column="user_name" property="userName"/>
+        <result column="password" property="password"/>
+        <result column="type" property="type"/>
+        <result column="status" property="status"/>
+        <result column="deleted" property="deleted"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, user_id, user_name, `password`, `type`, deleted, `status`, created_at, updated_at
+    </sql>
+
+    <select id="selectXrayInnerUserById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM xray_inner_users
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <select id="selectXrayInnerUserLikeList" resultMap="BaseResultMap" parameterType="com.ruoyi.system.domain.XrayInnerUser">
+        SELECT <include refid="Base_Column_List"/>
+        FROM xray_inner_users
+        WHERE deleted = 0
+        <if test="userName != null and userName != ''">
+            AND user_name LIKE CONCAT('%', #{userName}, '%')
+        </if>
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectXrayInnerUserList" resultMap="BaseResultMap" parameterType="com.ruoyi.system.domain.XrayInnerUser">
+        SELECT <include refid="Base_Column_List"/>
+        FROM xray_inner_users
+        WHERE deleted = 0
+        <if test="userName != null and userName != ''">
+            AND user_name  = #{userName}
+        </if>
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <insert id="insertXrayInnerUser" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO xray_inner_users(user_id, user_name, password, type, deleted, status)
+        VALUES(#{userId}, #{userName}, #{password}, #{type}, #{deleted}, #{status})
+    </insert>
+
+    <update id="updateXrayInnerUser" parameterType="com.ruoyi.system.domain.XrayInnerUser">
+        UPDATE xray_inner_users
+        <set>
+            <if test="userName != null and userName != ''">user_name=#{userName},</if>
+            <if test="password != null and password != ''">`password`=#{password},</if>
+            <if test="type != null and type != ''">`type`=#{type},</if>
+            <if test="deleted != null">deleted=#{deleted},</if>
+            <if test="status != null">status=#{status},</if>
+        </set>
+        WHERE id=#{id}
+    </update>
+
+    <update id="deleteXrayInnerUserById">
+        UPDATE xray_inner_users SET deleted=1 WHERE id=#{id}
+    </update>
+
+    <update id="deleteXrayInnerUserByIds">
+        UPDATE xray_inner_users SET deleted=1
+        WHERE id IN
+        <foreach collection="array" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+</mapper>

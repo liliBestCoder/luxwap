@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html  lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxwap管理后台</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <link th:href="@{/css/buttons.css}" rel="stylesheet"/>
+    <link rel="stylesheet" href="../css/all.min.css">
+    <!-- 移除重复字体内联样式，使用 style.css 中的全局字体设置 -->
+</head>
+<body>
+    <!-- 🔴左侧导航栏 -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <img th:src="@{/image/luxwap logo.png}" alt="Luxwap Logo" class="logo-image">
+                <span class="logo-text">Luxwap管理后台</span>
+            </div>
+        </div>
+        
+        <div class="nav-menu" id="menuContainer">
+            <!-- 客户管理（包含二级菜单） -->
+            <div class="nav-item">
+                <a href="#" class="nav-link" onclick="toggleSubmenu('customer-submenu', this)">
+                    <i class="fas fa-users nav-icon"></i>
+                    客户管理
+                    <i class="fas fa-chevron-down" style="margin-left: auto;"></i>
+                </a>
+                <div class="submenu" id="customer-submenu">
+                    <a href="pages/users.html" class="submenu-item" target="content-frame" onclick="setActive(this)">用户管理</a>
+                    <a href="pages/distributors.html" class="submenu-item" target="content-frame" onclick="setActive(this)">分销商管理</a>
+                </div>
+            </div>
+            
+            <!-- 线路信息 -->
+            <div class="nav-item">
+                <a href="pages/lines.html" class="nav-link" target="content-frame" onclick="setActive(this)">
+                    <i class="fas fa-route nav-icon"></i>
+                    线路信息
+                </a>
+            </div>
+            
+            <!-- 账单 -->
+            <div class="nav-item">
+                <a href="pages/billing.html" class="nav-link" target="content-frame" onclick="setActive(this)">
+                    <i class="fas fa-file-invoice-dollar nav-icon"></i>
+                    账单
+                </a>
+            </div>
+            
+            <!-- 活动评审 -->
+            <div class="nav-item">
+                <a href="pages/promotion.html" class="nav-link" target="content-frame" onclick="setActive(this)">
+                    <i class="fas fa-clipboard-check nav-icon"></i>
+                    活动管理
+                </a>
+            </div>
+            
+            <!-- 管理员设置 -->
+            <div class="nav-item">
+                <a href="pages/adminsettings.html" class="nav-link" target="content-frame" onclick="setActive(this)">
+                    <i class="fas fa-shield-alt nav-icon"></i>
+                    管理员配置
+                </a>
+            </div>
+
+             <!-- 设置 -->
+            <div class="nav-item">
+                <a href="pages/settings.html" class="nav-link" target="content-frame" onclick="setActive(this)">
+                    <i class="fas fa-cog nav-icon"></i>
+                    设置
+                </a>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- 🔴主内容区域 -->
+    <main class="main-content">
+        <iframe 
+            id="content-frame" 
+            name="content-frame" 
+            src="/system/xray-user"
+            style="width: 100%; height: calc(100vh - 40px); border: none; border-radius: 8px;"
+            onload="adjustFrameHeight()">
+        </iframe>
+    </main>
+
+    <script th:inline="javascript"> var ctx = [[@{/}]];
+    var menus = [[${menus}]];
+    </script>
+    <!-- 外移脚本：将内联脚本迁移到 JS/main.js -->
+    <script th:src="@{/JS/main.js}" defer></script>
+    <script th:src="@{/JS/common.js}" defer></script>
+    <script>
+        async function initNav() {
+            const tbody = document.getElementById('menuContainer');
+            // 模拟搜索结果过滤
+            if (!tbody) return;
+            tbody.innerHTML = (menus || []).map(l => {
+                // 子菜单 id
+                const submenuId = `submenu-${l.menuId}`;
+
+                if (l.menuType === 'M') {
+                    // 目录，有子菜单
+                    const childrenHtml = (l.children || []).map(c => `
+                        <a href="${c.url}"
+                           class="submenu-item"
+                           target="content-frame"
+                           onclick="setActive(this)">
+                            <i class="fas ${c.icon || 'fa-circle'} nav-icon"></i>
+                            ${c.menuName}
+                        </a>
+                    `).join('');
+
+                    return `
+                        <div class="nav-item">
+                            <a href="javascript:void(0);"
+                               class="nav-link"
+                               onclick="toggleSubmenu('${submenuId}', this)">
+                                <i class="fas ${l.icon || 'fa-folder'} nav-icon"></i>
+                                ${l.menuName}
+                                <i class="fas fa-chevron-down" style="margin-left: auto;"></i>
+                            </a>
+                            <div class="submenu" id="${submenuId}">
+                                ${childrenHtml}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // 普通菜单，直接链接
+                    return `
+                        <div class="nav-item">
+                            <a href="${l.url}"
+                               class="nav-link"
+                               target="content-frame"
+                               onclick="setActive(this)">
+                                <i class="fas ${l.icon || 'fa-circle'} nav-icon"></i>
+                                ${l.menuName}
+                            </a>
+                        </div>
+                    `;
+                }
+            }).join('');
+
+            tbody.innerHTML = tbody.innerHTML + `<div class="nav-item">
+                            <a href="/system/settings"
+                               class="nav-link"
+                               target="content-frame"
+                               onclick="setActive(this)">
+                                <i class="fas fa-cog nav-icon"></i>
+                                设置
+                            </a>
+                        </div>`;
+
+        }
+        initNav();
+    </script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+@charset "utf-8";
+/* 🔴登录注册页面样式 */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: (--primary-bg);
+    padding: 20px;
+}
+
+.auth-card {
+    background: var(--primary-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    width: 100%;
+    max-width: 400px;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-header {
+    background: var(--accent-color);
+    color: white;
+    padding: 32px;
+    text-align: center;
+}
+
+.auth-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.auth-header p {
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+.auth-body {
+    padding: 32px;
+}
+
+.auth-form {
+    margin-bottom: 24px;
+}
+
+.auth-footer {
+    text-align: center;
+    padding: 0 32px 32px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.auth-footer a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* 🔴第三方登录样式 */
+.social-login {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.social-login-title {
+    text-align: center;
+    margin-bottom: 16px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    position: relative;
+}
+
+.social-login-title::before,
+.social-login-title::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 30%;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.social-login-title::before {
+    left: 0;
+}
+
+.social-login-title::after {
+    right: 0;
+}
+
+.social-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.social-btn {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--primary-bg);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.social-btn:hover {
+    background: var(--hover-bg);
+    border-color: var(--accent-color);
+}
+
+.social-btn.x:hover {
+    background: #000;
+    color: white;
+}
+
+.social-btn.google:hover {
+    background: #4285f4;
+    color: white;
+}
+
+.social-btn.facebook:hover {
+    background: #1877f2;
+    color: white;
+}
+
+/* 🔴表单验证样式 */
+.form-group.error .form-control {
+    border-color: var(--danger-color);
+}
+
+.form-group.error .error-message {
+    color: var(--danger-color);
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+}
+
+.form-group.success .form-control {
+    border-color: var(--success-color);
+}
+
+.form-group .error-message {
+    display: none;
+}
+
+/* 🔴密码强度指示器 */
+.password-strength {
+    margin-top: 8px;
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    background: var(--border-color);
+}
+
+.password-strength-bar {
+    height: 100%;
+    transition: all var(--transition-speed);
+    border-radius: 2px;
+}
+
+.password-strength-weak {
+    width: 33%;
+    background: var(--danger-color);
+}
+
+.password-strength-medium {
+    width: 66%;
+    background: var(--warning-color);
+}
+
+.password-strength-strong {
+    width: 100%;
+    background: var(--success-color);
+}
+
+/* 🔴国家选择器样式 */
+.country-select {
+    position: relative;
+}
+
+.country-select select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--primary-bg);
+    color: var(--text-primary);
+    cursor: pointer;
+    appearance: none;
+}
+
+.country-select::after {
+    content: '▼';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--text-secondary);
+}
+
+/* 🔴响应式登录页面 */
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 10px;
+    }
+    
+    .auth-card {
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .auth-header,
+    .auth-body,
+    .auth-footer {
+        padding: 24px;
+    }
+    
+    .social-buttons {
+        flex-direction: column;
+    }
+}

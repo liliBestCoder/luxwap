@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.XrayActivityMapper">
+    
+    <resultMap type="XrayActivity" id="XrayActivityResult">
+        <result property="id"    column="id"    />
+        <result property="activityConfigId"    column="activity_config_id"    />
+        <result property="participantsCnt"    column="participants_cnt"    />
+        <result property="moderatorsCnt"    column="moderators_cnt"    />
+        <result property="createdAt"    column="created_at"    />
+        <result property="updatedAt"    column="updated_at"    />
+    </resultMap>
+
+    <sql id="selectXrayActivityVo">
+        select id, activity_config_id, participants_cnt, moderators_cnt, created_at, updated_at from xray_activity
+    </sql>
+
+    <select id="selectXrayActivityList" parameterType="XrayActivity" resultMap="XrayActivityResult">
+        <include refid="selectXrayActivityVo"/>
+        <where>  
+            <if test="activityConfigId != null "> and activity_config_id = #{activityConfigId}</if>
+            <if test="participantsCnt != null "> and participants_cnt = #{participantsCnt}</if>
+            <if test="moderatorsCnt != null "> and moderators_cnt = #{moderatorsCnt}</if>
+            <if test="createdAt != null "> and created_at = #{createdAt}</if>
+            <if test="updatedAt != null "> and updated_at = #{updatedAt}</if>
+        </where>
+    </select>
+    
+    <select id="selectXrayActivityById" parameterType="Long" resultMap="XrayActivityResult">
+        <include refid="selectXrayActivityVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertXrayActivity" parameterType="XrayActivity" useGeneratedKeys="true" keyProperty="id">
+        insert into xray_activity
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="activityConfigId != null">activity_config_id,</if>
+            <if test="participantsCnt != null">participants_cnt,</if>
+            <if test="moderatorsCnt != null">moderators_cnt,</if>
+            <if test="createdAt != null">created_at,</if>
+            <if test="updatedAt != null">updated_at,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="activityConfigId != null">#{activityConfigId},</if>
+            <if test="participantsCnt != null">#{participantsCnt},</if>
+            <if test="moderatorsCnt != null">#{moderatorsCnt},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+            <if test="updatedAt != null">#{updatedAt},</if>
+         </trim>
+    </insert>
+
+    <update id="updateXrayActivity" parameterType="XrayActivity">
+        update xray_activity
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="activityConfigId != null">activity_config_id = #{activityConfigId},</if>
+            <if test="participantsCnt != null">participants_cnt = #{participantsCnt},</if>
+            <if test="moderatorsCnt != null">moderators_cnt = #{moderatorsCnt},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteXrayActivityById" parameterType="Long">
+        delete from xray_activity where id = #{id}
+    </delete>
+
+    <delete id="deleteXrayActivityByIds" parameterType="String">
+        delete from xray_activity where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.XrayPaymentSubmitTokenMapper">
+
+    <select id="selectByToken" resultType="com.ruoyi.system.domain.XrayPaymentSubmitToken">
+        select id, token, user_id, status, order_no, created_at, expired_at, used_at
+        from xray_payment_submit_token
+        where token = #{token}
+    </select>
+
+    <insert id="insertSubmitToken" parameterType="com.ruoyi.system.domain.XrayPaymentSubmitToken">
+        insert ignore into xray_payment_submit_token (
+            token, user_id, status, order_no, created_at, expired_at, used_at
+        )
+        values (
+            #{token}, #{userId}, #{status}, #{orderNo}, #{createdAt}, #{expiredAt}, #{usedAt}
+        )
+    </insert>
+
+    <update id="useSubmitToken">
+        update xray_payment_submit_token
+        set status = 1,
+            order_no = #{orderNo},
+            used_at = NOW()
+        where token = #{token}
+          and user_id = #{userId}
+          and status = 0
+          and expired_at &gt; NOW()
+    </update>
+
+    <update id="expireUnusedTokens">
+        update xray_payment_submit_token
+        set status = 2
+        where status = 0
+          and expired_at &lt;= NOW()
+    </update>
+
+</mapper>

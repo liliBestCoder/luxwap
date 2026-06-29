@@ -1,0 +1,71 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows10.0.17763</TargetFramework>
+		<GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+		<UseWPF>true</UseWPF>
+		<ApplicationIcon>Resources\v2rayN.ico</ApplicationIcon>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Converters\Class1.cs" />
+	  <Compile Remove="Converters\SpeedUnitVisibilityConverter.cs" />
+	  <Compile Remove="Views\Class1.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Emoji.Wpf" />
+		<PackageReference Include="Hardcodet.NotifyIcon.Wpf" />
+		<PackageReference Include="MaterialDesignThemes" />
+		<PackageReference Include="H.NotifyIcon.Wpf" />
+		<PackageReference Include="Newtonsoft.Json" />
+		<PackageReference Include="ReactiveUI.Fody">
+			<TreatAsUsed>true</TreatAsUsed>
+		</PackageReference>
+		<PackageReference Include="ReactiveUI.WPF" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AdditionalFiles Include="app.manifest" />
+		<EmbeddedResource Include="Resources\v2rayN.ico">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<Resource Include="Resources\NotifyIcon1.ico" />
+		<Resource Include="Resources\NotifyIcon2.ico" />
+		<Resource Include="Resources\NotifyIcon3.ico" />
+		<Resource Include="Resources\NotifyIcon4.ico" />
+		<Resource Include="Resources\v2rayN.ico" />
+        <Resource Include="Resources\cloud.png" />
+        <Resource Include="Resources\crowded.png" />
+        <Resource Include="Resources\area.png" />
+		<Resource Include="Resources\avatar.png" />
+        <Resource Include="Resources\privacy_icon.png" />
+        <Resource Include="Resources\tunel_icon.png" />
+        <Resource Include="Resources\concurrency_icon.png" />
+        <Resource Include="Resources\guard_icon.png" />
+        <Resource Include="Resources\rocket.png" />
+        <Resource Include="Resources\select.png" />
+        <Resource Include="Resources\fresh.png" />
+        <Resource Include="Resources\copy.png" />
+        <Resource Include="Resources\icon_logo.png" />
+        <Resource Include="Resources\icon_X_logo.png" />
+        <Resource Include="Resources\icon_Google_logo.png" />
+        <Resource Include="Resources\icon_facebook_logo.png" />
+		<Resource Include="Resources\logo.png" />
+		<Resource Include="Resources\route_nav.png" />
+		<Resource Include="Resources\dns_nav.png" />
+		<Resource Include="Resources\lang_nav.png" />
+		<Resource Include="Resources\map_nav.png" />
+		<Resource Include="Resources\trade.png" />
+        <Resource Include="Resources\update.png" />
+		<Resource Include="Resources\score.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ServiceLib\ServiceLib.csproj" />
+	</ItemGroup>
+
+</Project>

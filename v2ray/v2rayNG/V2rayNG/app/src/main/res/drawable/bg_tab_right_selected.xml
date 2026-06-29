@@ -1,0 +1,11 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 整栏淡蓝 -->
+    <item>
+        <color android:color="#88B4EE" />
+    </item>
+
+    <!-- 右边 PNG（镜像+切口） -->
+    <item>
+        <bitmap android:src="@drawable/tab_sign_up" android:gravity="end|top"/>
+    </item>
+</layer-list>

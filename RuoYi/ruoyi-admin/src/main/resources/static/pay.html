@@ -1,0 +1,326 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>购买套餐</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 flex flex-col items-center py-10 text-gray-800">
+  <div class="text-center mb-8">
+    <h1 class="text-2xl font-bold mb-2">购买套餐</h1>
+    <p class="text-gray-500">选择适合您的会员套餐，享受更多优质服务</p>
+  </div>
+
+  <div id="status" class="hidden w-full max-w-md mb-4 rounded-lg px-4 py-3 text-sm"></div>
+  <input type="hidden" id="submitToken" value="__PAY_SUBMIT_TOKEN__" />
+
+  <div id="packetList" class="space-y-4 w-full max-w-md">
+    <div class="text-center text-gray-400 py-10">正在加载套餐...</div>
+  </div>
+
+  <div class="w-full max-w-md mt-10 bg-white rounded-xl shadow-sm p-5">
+    <h3 class="text-lg font-semibold mb-4">付款方式</h3>
+    <ul id="paymentList" class="space-y-3">
+      <li class="text-gray-400 text-sm">正在加载付款方式...</li>
+    </ul>
+    <button id="buyButton" class="w-full mt-5 bg-blue-600 text-white py-2 rounded-lg text-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+      立即购买
+    </button>
+  </div>
+
+  <div id="paymentSubmitHost" class="hidden"></div>
+
+  <div id="orderLoading" class="hidden fixed inset-0 z-40 items-center justify-center bg-black/35 px-4">
+    <div class="flex items-center gap-3 rounded-xl bg-white px-5 py-4 text-sm font-medium text-gray-700 shadow-xl">
+      <span class="h-5 w-5 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600"></span>
+      <span id="orderLoadingText">正在创建订单...</span>
+    </div>
+  </div>
+
+  <div id="qrModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/45 px-4">
+    <div class="w-full max-w-sm rounded-xl bg-white shadow-xl">
+      <div class="flex items-center justify-between border-b px-5 py-4">
+        <div>
+          <h3 class="text-lg font-semibold">支付宝扫码支付</h3>
+          <p id="qrOrderNo" class="mt-1 text-xs text-gray-400"></p>
+        </div>
+        <button id="closeQrModal" type="button" class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">×</button>
+      </div>
+      <div class="px-5 py-6 text-center">
+        <div class="mx-auto flex h-64 w-64 items-center justify-center rounded-lg border bg-white">
+          <img id="qrImage" class="h-60 w-60" alt="支付宝支付二维码" />
+        </div>
+        <p id="qrStatus" class="mt-4 text-sm text-gray-500">请使用手机支付宝扫码完成付款</p>
+        <div id="qrActions" class="mt-5 hidden">
+          <button id="qrDoneButton" type="button" class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">完成</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const iconMap = {
+      alipay: "https://cdn.simpleicons.org/alipay",
+      wechat: "https://cdn.simpleicons.org/wechat",
+      stripe: "https://cdn.simpleicons.org/stripe",
+      paypal: "https://cdn.simpleicons.org/paypal",
+      circle: "https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/128/color/usdc.png",
+    };
+
+    let selectedPacketId = null;
+    let selectedPayType = null;
+    let paymentPollTimer = null;
+    let currentOrderNo = null;
+    let creatingOrder = false;
+    let paymentFinished = false;
+
+    function showStatus(message, type = "info") {
+      const el = document.getElementById("status");
+      const colors = {
+        info: "bg-blue-50 text-blue-700",
+        success: "bg-green-50 text-green-700",
+        error: "bg-red-50 text-red-700",
+      };
+      el.className = `w-full max-w-md mb-4 rounded-lg px-4 py-3 text-sm ${colors[type] || colors.info}`;
+      el.textContent = message;
+      el.classList.remove("hidden");
+    }
+
+    function money(value) {
+      const num = Number(value || 0);
+      return `US$ ${num.toFixed(2)}`;
+    }
+
+    function renderPackets(packets) {
+      const root = document.getElementById("packetList");
+      if (!packets || packets.length === 0) {
+        root.innerHTML = '<div class="text-center text-gray-400 py-10">暂无可购买套餐</div>';
+        return;
+      }
+      selectedPacketId = packets[0].id;
+      root.innerHTML = packets.map((packet, index) => {
+        const totalMonths = Number(packet.durationMonths || 0) + Number(packet.bonusMonths || 0);
+        const bonus = Number(packet.bonusMonths || 0) > 0
+          ? `<span class="ml-2 bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded text-xs">赠送 ${packet.bonusMonths} 个月</span>`
+          : "";
+        const selected = index === 0 ? "ring-2 ring-blue-500" : "";
+        return `
+          <button type="button" data-packet-id="${packet.id}" class="packet-card block w-full text-left border rounded-xl bg-white shadow-sm hover:shadow-md transition p-5 ${selected}">
+            <div class="flex justify-between items-center gap-4">
+              <div>
+                <h2 class="text-lg font-semibold mb-1">${packet.name || `${packet.durationMonths}个月`} ${bonus}</h2>
+                <p class="text-gray-500 text-sm">月均 <span class="font-semibold text-blue-600">${money(packet.pricePerMonth)}/月</span></p>
+                <p class="text-gray-400 text-xs mt-1">${packet.description || "即时开通，立即享受全会员权益"}</p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="font-semibold text-gray-700">合计 ${totalMonths} 个月</p>
+                <p class="text-lg font-bold text-blue-600">${money(packet.price)}</p>
+                <span class="inline-block mt-2 bg-blue-600 text-white px-4 py-1 rounded-lg">${index === 0 ? "选择" : "立即购买"}</span>
+              </div>
+            </div>
+          </button>`;
+      }).join("");
+
+      document.querySelectorAll(".packet-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          selectedPacketId = card.dataset.packetId;
+          document.querySelectorAll(".packet-card").forEach((item) => item.classList.remove("ring-2", "ring-blue-500"));
+          card.classList.add("ring-2", "ring-blue-500");
+          updateBuyState();
+        });
+      });
+    }
+
+    function renderPayments(methods) {
+      const root = document.getElementById("paymentList");
+      if (!methods || methods.length === 0) {
+        root.innerHTML = '<li class="text-gray-400 text-sm">暂无启用的付款方式</li>';
+        selectedPayType = null;
+        updateBuyState();
+        return;
+      }
+      selectedPayType = methods[0].type;
+      root.innerHTML = methods.map((method, index) => {
+        const icon = iconMap[method.type] || "https://cdn.simpleicons.org/visa";
+        return `
+          <li data-pay-type="${method.type}" class="pay-method flex items-center justify-between border p-2 rounded-lg cursor-pointer hover:bg-blue-50">
+            <div class="flex items-center space-x-3">
+              <img src="${icon}" class="w-7 h-7" alt="${method.type}" />
+              <span>${method.name || method.type}</span>
+            </div>
+            <input type="radio" name="pay" ${index === 0 ? "checked" : ""} />
+          </li>`;
+      }).join("");
+
+      document.querySelectorAll(".pay-method").forEach((item) => {
+        item.addEventListener("click", () => {
+          selectedPayType = item.dataset.payType;
+          document.querySelectorAll(".pay-method input").forEach((input) => input.checked = false);
+          item.querySelector("input").checked = true;
+          updateBuyState();
+        });
+      });
+      updateBuyState();
+    }
+
+    function updateBuyState() {
+      document.getElementById("buyButton").disabled = creatingOrder || !selectedPacketId || !selectedPayType;
+    }
+
+    function setCreatingOrder(value) {
+      creatingOrder = value;
+      const button = document.getElementById("buyButton");
+      const loading = document.getElementById("orderLoading");
+      button.textContent = value ? "正在创建订单..." : "立即购买";
+      if (value) {
+        loading.classList.remove("hidden");
+        loading.classList.add("flex");
+      } else {
+        loading.classList.add("hidden");
+        loading.classList.remove("flex");
+      }
+      updateBuyState();
+    }
+
+    function openQrModal(orderNo, qrCode) {
+      currentOrderNo = orderNo;
+      paymentFinished = false;
+      const modal = document.getElementById("qrModal");
+      document.getElementById("qrOrderNo").textContent = `订单号：${orderNo || ""}`;
+      document.getElementById("qrStatus").textContent = "等待支付中，系统会自动刷新支付结果...";
+      document.getElementById("qrImage").src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(qrCode)}`;
+      document.getElementById("qrActions").classList.add("hidden");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      startPaymentPolling(orderNo);
+    }
+
+    function closeQrModal() {
+      const modal = document.getElementById("qrModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      stopPaymentPolling();
+    }
+
+    function stopPaymentPolling() {
+      if (paymentPollTimer) {
+        clearInterval(paymentPollTimer);
+        paymentPollTimer = null;
+      }
+    }
+
+    async function checkOrderStatus(orderNo) {
+      const res = await fetch(`/api/client/payment/orderStatus?orderNo=${encodeURIComponent(orderNo)}`, { credentials: "include" });
+      const payload = await res.json();
+      if (payload.code !== 0) {
+        return;
+      }
+      const status = payload.status;
+      if (status === "SUCCESS") {
+        paymentFinished = true;
+        stopPaymentPolling();
+        document.getElementById("qrStatus").textContent = "支付成功，会员已续期";
+        document.getElementById("qrDoneButton").textContent = "完成";
+        document.getElementById("qrActions").classList.remove("hidden");
+        showStatus("支付成功，会员已续期。", "success");
+      } else if (status === "FAILED" || status === "CLOSED") {
+        stopPaymentPolling();
+        document.getElementById("qrStatus").textContent = "订单已关闭，请刷新页面后重新下单";
+        document.getElementById("qrDoneButton").textContent = "刷新页面";
+        document.getElementById("qrActions").classList.remove("hidden");
+        showStatus("订单已关闭，请刷新页面后重新下单。", "error");
+      } else {
+        document.getElementById("qrStatus").textContent = `等待支付中，最近检查：${new Date().toLocaleTimeString()}`;
+      }
+    }
+
+    function startPaymentPolling(orderNo) {
+      stopPaymentPolling();
+      document.getElementById("qrStatus").textContent = "等待支付中，系统会自动刷新支付结果...";
+      paymentPollTimer = setInterval(() => checkOrderStatus(orderNo).catch(() => {}), 2000);
+      checkOrderStatus(orderNo).catch(() => {});
+    }
+
+    function submitPayment(payload) {
+      if (payload.qrCode) {
+        showStatus("订单已创建，请扫码支付。", "success");
+        openQrModal(payload.orderNo, payload.qrCode);
+        return true;
+      }
+
+      if (payload.paymentForm) {
+        showStatus("订单已创建，正在跳转支付宝...", "success");
+        const host = document.getElementById("paymentSubmitHost");
+        host.innerHTML = payload.paymentForm;
+        const form = host.querySelector("form");
+        if (!form) {
+          throw new Error("支付宝支付表单无效");
+        }
+        form.submit();
+        return true;
+      }
+
+      if (payload.paymentUrl) {
+        showStatus("订单已创建，正在跳转支付网关...", "success");
+        window.location.href = payload.paymentUrl;
+        return true;
+      }
+      return false;
+    }
+
+    async function loadConfig() {
+      const res = await fetch("/api/client/payment/config", { credentials: "include" });
+      if (res.status === 401) {
+        showStatus("登录状态已失效，请回到客户端重新打开续费页面。", "error");
+        document.getElementById("packetList").innerHTML = "";
+        document.getElementById("paymentList").innerHTML = "";
+        return;
+      }
+      const payload = await res.json();
+      if (payload.code !== 0) {
+        throw new Error(payload.msg || "加载配置失败");
+      }
+      renderPackets(payload.data.packets || []);
+      renderPayments(payload.data.paymentMethods || []);
+    }
+
+    async function createOrder() {
+      if (!selectedPacketId || !selectedPayType) {
+        return;
+      }
+      const button = document.getElementById("buyButton");
+      setCreatingOrder(true);
+      try {
+        const form = new URLSearchParams();
+        form.set("packetId", selectedPacketId);
+        form.set("type", selectedPayType);
+        form.set("submitToken", document.getElementById("submitToken").value);
+        const res = await fetch("/api/client/payment/createOrder", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+          body: form.toString(),
+        });
+        const payload = await res.json();
+        if (payload.code !== 0) {
+          showStatus(payload.msg || "创建订单失败", "error");
+          return;
+        }
+        if (!submitPayment(payload)) {
+          showStatus(`订单已创建：${payload.orderNo || ""}。该支付方式还未接入跳转。`, "success");
+        }
+      } catch (error) {
+        showStatus(error.message || "网络错误，请稍后重试", "error");
+      } finally {
+        setCreatingOrder(false);
+      }
+    }
+
+    document.getElementById("buyButton").addEventListener("click", createOrder);
+    document.getElementById("closeQrModal").addEventListener("click", closeQrModal);
+    document.getElementById("qrDoneButton").addEventListener("click", () => window.close());
+    loadConfig().catch((error) => showStatus(error.message || "加载失败", "error"));
+  </script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分销商信息 - Luxwap管理后台</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/buttons.css">
+    <link rel="stylesheet" href="../css/all.min.css">
+    <link rel="stylesheet" href="../css/simplePagination.css">
+    <script src="../JS/jquery.min.js"></script>
+    <script src="../JS/jquery.simplePagination.min.js"></script>
+    <script src="../JS/echarts.min.js"></script>
+</head>
+<body>
+    <div class="page-header">
+        <h1 class="page-title">分销商信息</h1>
+        <p class="page-subtitle">管理合作伙伴和分销商网络</p>
+    </div>
+
+    <!-- 🔴分销商概览卡片 -->
+<div class="overview-grid">
+    <div class="card is-accent" id="card-total-distributors">
+        <div class="overview-row">
+            <div>
+                <h3 class="overview-label">总分销商数</h3>
+                <p class="overview-metric">89</p>
+            </div>
+            <div class="overview-icon">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="card is-success" id="card-active-distributors">
+        <div class="overview-row">
+            <div>
+                <h3 class="overview-label">活跃分销商</h3>
+                <p class="overview-metric">76</p>
+            </div>
+            <div class="overview-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="card is-warning" id="card-new-this-month">
+        <div class="overview-row">
+            <div>
+                <h3 class="overview-label">本月新增</h3>
+                <p class="overview-metric">12</p>
+            </div>
+            <div class="overview-icon">
+                <i class="fas fa-plus-circle"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- 🔴业绩统计图表 -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px;">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">月度业绩趋势</h3>
+            </div>
+            <div  id="salesTrendChart" style="height: 300px; background: var(--hover-bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+                <i class="fas fa-chart-area" style="font-size: 48px; margin-right: 10px;"></i>
+                图表区域 - 业绩趋势图
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">等级分布</h3>
+            </div>
+            <div style="padding: 20px;" id="levelStatsContainer">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <span>钻石级</span>
+                    <span style="color: var(--accent-color); font-weight: bold;">15家</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <span>黄金级</span>
+                    <span style="color: var(--success-color); font-weight: bold;">28家</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <span>白银级</span>
+                    <span style="color: var(--warning-color); font-weight: bold;">32家</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>普通级</span>
+                    <span style="color: var(--text-secondary);">14家</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔴分销商筛选 -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">分销商筛选</h3>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+                <label class="form-label">分销商名称</label>
+                <input type="text" class="form-control" placeholder="输入分销商名称..." id="distributorName">
+            </div>
+            <div>
+                <label class="form-label">等级</label>
+                <select class="form-control" id="distributorLevel">
+                    <option value="">全部等级</option>
+                    <option value="diamond">钻石级</option>
+                    <option value="gold">黄金级</option>
+                    <option value="silver">白银级</option>
+                    <option value="normal">普通级</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">国家</label>
+                <select class="form-control" id="distributorRegion">
+                    <option value="">全部地区</option>
+                    <option value="CN">中国</option>
+                    <option value="TW">台湾</option>
+                    <option value="VN">越南</option>
+                    <option value="RU">俄罗斯</option>
+                    <option value="KR">韩国</option>
+                    <option value="US">美国</option>
+                    <option value="JP">日本</option>
+                </select>
+            </div>
+            <div style="display: flex; align-items: end; gap: 10px;">
+                <button class="btn btn-primary" onclick="searchDistributors()">
+                    <i class="fas fa-search"></i> 搜索
+                </button>
+                <button class="btn btn-secondary" onclick="clearDistributorFilter()">
+                    <i class="fas fa-refresh"></i> 重置
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔴分销商列表 --> 
+    <div class="card">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 class="card-title">分销商列表</h3>
+</div>
+        
+        <div style="overflow-x: auto;">
+            <table class="table" id="distributorsTable" style="font-size: 15px;">
+                <thead>
+                    <tr>
+                        <th style="min-width: 80px;">分销商ID</th>
+                        <th style="min-width: 100px;">注册时间</th>
+                        <th style="min-width: 160px;">分销商Email</th>
+                        <th style="min-width: 80px;">联系人</th>
+                        <th style="min-width: 80px;">等级</th>
+                        <th style="min-width: 100px;">月销售额</th>
+                        <th style="min-width: 80px;">佣金比例</th>
+                        <th style="min-width: 80px;">首充返佣</th>
+                        <th style="min-width: 160px;">收款Paypal</th>
+                        <th style="min-width: 100px;">绑定码</th>
+                        <th style="min-width: 100px;">专属后缀</th>
+                        <th style="min-width: 80px;">国家</th>
+                    </tr>
+                </thead>
+                <tbody id="distributorsTableBody">
+                    <!-- 示例数据 -->
+                    <tr>
+                        <td>D001</td>
+                        <td>2023-06-15</td>
+                        <td>ohn.doe@example.com</td>
+                        <td>张经理</td>
+                        <td><span style="color: var(--accent-color);">钻石级</span></td>
+                        <td>¥580,000</td>
+                        <td>10%</td>
+                        <td>30%</td>
+                        <td>paypal1@example.com</td>
+                        <td><code>A7B8C9D0</code></td>
+                        <td>dealer1</td>
+                        <td>中国</td>
+                    </tr>
+                    <!-- 其他行数据保持相同结构 -->
+                    <tr>
+                        <td>D002</td>
+                        <td>2023-08-22</td>
+                        <td>ohn.doe@example.com</td>
+                        <td>李总监</td>
+                        <td><span style="color: var(--success-color);">黄金级</span></td>
+                        <td>¥320,000</td>
+                        <td>10%</td>
+                        <td>30%</td>
+                        <td>paypal2@example.com</td>
+                        <td><code>E1F2G3H4</code></td>
+                        <td>dealer2</td>
+                        <td>中国</td>
+                    </tr>
+                    <tr>
+                        <td>D003</td>
+                        <td>2024-01-10</td>
+                        <td>ohn.doe@example.com</td>
+                        <td>王主管</td>
+                        <td><span style="color: var(--warning-color);">白银级</span></td>
+                        <td>¥180,000</td>
+                        <td>10%</td>
+                        <td>30%</td>
+                        <td>paypal3@example.com</td>
+                        <td><code>I5J6K7L8</code></td>
+                        <td>dealer3</td>
+                        <td>美国</td>
+                    </tr>
+                    <tr>
+                        <td>D004</td>
+                        <td>2023-11-05</td>
+                        <td>ohn.doe@example.com</td>
+                        <td>陈经理</td>
+                        <td><span style="color: var(--text-secondary);">普通级</span></td>
+                        <td>¥85,000</td>
+                        <td>10%</td>
+                        <td>30%</td>
+                        <td>paypal4@example.com</td>
+                        <td><code>M9N0P1Q2</code></td>
+                        <td>dealer4</td>
+                        <td>日本</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 🔴分页 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+            <div id="pagination-info-dealer" style="color: var(--text-secondary); font-size: 13px;">
+                显示 1-4 条，共 4 条记录
+            </div>
+            <div id="pagination-container-dealer"></div>
+        </div>
+    </div>
+<!-- 页面主体 --> 
+	<script src="../JS/common.js" defer></script>
+	<script src="../JS/distributors.js" defer></script>
+    <script src="../JS/search.js" defer></script>
+</body>
+</html>

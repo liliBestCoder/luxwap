@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.XrayDistributorsMapper">
+    
+    <resultMap type="XrayDistributors" id="XrayDistributorsResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="email"    column="email"    />
+        <result property="contactPerson"    column="contact_person"    />
+        <result property="level"    column="level"    />
+        <result property="monthlySales"    column="monthly_sales"    />
+        <result property="commissionRate"    column="commission_rate"    />
+        <result property="firstChargeBonus"    column="first_charge_bonus"    />
+        <result property="paypalAccount"    column="paypal_account"    />
+        <result property="bindingCode"    column="binding_code"    />
+        <result property="exclusiveSuffix"    column="exclusive_suffix"    />
+        <result property="region"    column="region"    />
+        <result property="status"    column="status"    />
+        <result property="createdAt"    column="created_at"    />
+        <result property="updatedAt"    column="updated_at"    />
+    </resultMap>
+
+    <sql id="selectXrayDistributorsVo">
+        select id, user_id, email, contact_person, level, monthly_sales, commission_rate, first_charge_bonus, paypal_account, binding_code, exclusive_suffix, region, status, created_at, updated_at from xray_distributors
+    </sql>
+
+    <select id="selectXrayDistributorsList" parameterType="XrayDistributors" resultMap="XrayDistributorsResult">
+        <include refid="selectXrayDistributorsVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="email != null  and email != ''"> and email = #{email}</if>
+            <if test="contactPerson != null  and contactPerson != ''"> and contact_person like concat('%', #{contactPerson}, '%')</if>
+            <if test="level != null  and level != ''"> and level = #{level}</if>
+            <if test="monthlySales != null "> and monthly_sales = #{monthlySales}</if>
+            <if test="commissionRate != null "> and commission_rate = #{commissionRate}</if>
+            <if test="firstChargeBonus != null "> and first_charge_bonus = #{firstChargeBonus}</if>
+            <if test="paypalAccount != null  and paypalAccount != ''"> and paypal_account = #{paypalAccount}</if>
+            <if test="bindingCode != null  and bindingCode != ''"> and binding_code = #{bindingCode}</if>
+            <if test="exclusiveSuffix != null  and exclusiveSuffix != ''"> and exclusive_suffix = #{exclusiveSuffix}</if>
+            <if test="region != null  and region != ''"> and region = #{region}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="createdAt != null "> and created_at = #{createdAt}</if>
+            <if test="updatedAt != null "> and updated_at = #{updatedAt}</if>
+        </where>
+    </select>
+    
+    <select id="selectXrayDistributorsById" parameterType="java.lang.Long" resultMap="XrayDistributorsResult">
+        <include refid="selectXrayDistributorsVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertXrayDistributors" parameterType="XrayDistributors">
+        insert into xray_distributors
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="userId != null ">user_id,</if>
+            <if test="email != null and email != ''">email,</if>
+            <if test="contactPerson != null">contact_person,</if>
+            <if test="level != null">level,</if>
+            <if test="monthlySales != null">monthly_sales,</if>
+            <if test="commissionRate != null">commission_rate,</if>
+            <if test="firstChargeBonus != null">first_charge_bonus,</if>
+            <if test="paypalAccount != null">paypal_account,</if>
+            <if test="bindingCode != null">binding_code,</if>
+            <if test="exclusiveSuffix != null">exclusive_suffix,</if>
+            <if test="region != null">region,</if>
+            <if test="status != null">status,</if>
+            <if test="createdAt != null">created_at,</if>
+            <if test="updatedAt != null">updated_at,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="userId != null ">#{userId},</if>
+            <if test="email != null and email != ''">#{email},</if>
+            <if test="contactPerson != null">#{contactPerson},</if>
+            <if test="level != null">#{level},</if>
+            <if test="monthlySales != null">#{monthlySales},</if>
+            <if test="commissionRate != null">#{commissionRate},</if>
+            <if test="firstChargeBonus != null">#{firstChargeBonus},</if>
+            <if test="paypalAccount != null">#{paypalAccount},</if>
+            <if test="bindingCode != null">#{bindingCode},</if>
+            <if test="exclusiveSuffix != null">#{exclusiveSuffix},</if>
+            <if test="region != null">#{region},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+            <if test="updatedAt != null">#{updatedAt},</if>
+         </trim>
+    </insert>
+
+    <update id="updateXrayDistributors" parameterType="XrayDistributors">
+        update xray_distributors
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null ">user_id = #{userId},</if>
+            <if test="email != null and email != ''">email = #{email},</if>
+            <if test="contactPerson != null">contact_person = #{contactPerson},</if>
+            <if test="level != null">level = #{level},</if>
+            <if test="monthlySales != null">monthly_sales = #{monthlySales},</if>
+            <if test="commissionRate != null">commission_rate = #{commissionRate},</if>
+            <if test="firstChargeBonus != null">first_charge_bonus = #{firstChargeBonus},</if>
+            <if test="paypalAccount != null">paypal_account = #{paypalAccount},</if>
+            <if test="bindingCode != null">binding_code = #{bindingCode},</if>
+            <if test="exclusiveSuffix != null">exclusive_suffix = #{exclusiveSuffix},</if>
+            <if test="region != null">region = #{region},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteXrayDistributorsById" parameterType="String">
+        delete from xray_distributors where id = #{id}
+    </delete>
+
+    <delete id="deleteXrayDistributorsByIds" parameterType="String">
+        delete from xray_distributors where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 1. 总数 / 活跃数 / 本月新增 -->
+    <select id="getDistributorStats" resultType="com.ruoyi.system.domain.XrayDistributors$DistributorStatsVO">
+        SELECT
+                (SELECT COUNT(*) FROM xray_distributors) AS total,
+                (SELECT COUNT(*) FROM xray_distributors
+                 WHERE status = 'approved' AND monthly_sales > 0) AS active,
+                (SELECT COUNT(*) FROM xray_distributors
+                 WHERE YEAR(created_at) = YEAR(CURDATE())
+                   AND MONTH(created_at) = MONTH(CURDATE())) AS newThisMonth
+    </select>
+
+    <!-- 2. 按等级分布 -->
+    <select id="getLevelCounts" resultType="com.ruoyi.system.domain.XrayDistributors$LevelCountVO">
+        SELECT level, COUNT(*) AS count
+        FROM xray_distributors
+        GROUP BY level
+    </select>
+
+    <!-- 3. 区域 - 趋势图 -->
+    <select id="getRegionTrends" resultType="com.ruoyi.system.domain.XrayDistributors$RegionTrendVO">
+        SELECT region,
+               DATE_FORMAT(created_at, '%Y-%m') AS month,
+               SUM(monthly_sales) AS totalSales
+        FROM xray_distributors
+        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL #{months} MONTH)
+        GROUP BY region, DATE_FORMAT(created_at, '%Y-%m')
+        ORDER BY month ASC
+    </select>
+
+</mapper>

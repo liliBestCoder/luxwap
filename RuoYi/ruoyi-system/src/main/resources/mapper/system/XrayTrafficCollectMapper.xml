@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+        <!DOCTYPE mapper
+                PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.XrayTrafficCollectMapper">
+
+    <resultMap type="XrayTrafficCollect" id="XrayTrafficCollectResult">
+        <result property="id"    column="id"    />
+        <result property="clientIp"    column="client_ip"    />
+        <result property="email"    column="email"    />
+        <result property="level"    column="level"    />
+        <result property="type"    column="type"    />
+        <result property="val"    column="val"    />
+        <result property="time"    column="time"    />
+        <result property="status"    column="status"    />
+        <result property="createdAt"    column="created_at"    />
+        <result property="updatedAt"    column="updated_at"    />
+    </resultMap>
+
+    <sql id="selectXrayTrafficCollectVo">
+        select id, client_ip, email, level, type, val, time, status, created_at, updated_at from xray_traffic_collect
+    </sql>
+
+    <insert id="saveXrayTrafficCollectList" parameterType="java.util.List">
+        insert into xray_traffic_collect (
+        client_ip, email, level, type, val, time
+        )
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.clientIp},
+            #{item.email},
+            #{item.level},
+            #{item.type},
+            #{item.val},
+            #{item.time}
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        val = VALUES(val),       -- 更新 val 字段
+        updated_at = NOW(),      -- 更新 updated_at 字段
+        time = VALUES(time);     -- 更新 time 字段为新插入的 time 值
+    </insert>
+
+    <select id="selectXrayTrafficCollectList" parameterType="XrayTrafficCollect" resultMap="XrayTrafficCollectResult">
+        <include refid="selectXrayTrafficCollectVo"/>
+        <where>
+            <if test="clientIp != null  and clientIp != ''"> and client_ip = #{clientIp}</if>
+            <if test="email != null  and email != ''"> and email = #{email}</if>
+            <if test="level != null  and level != ''"> and level = #{level}</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="val != null "> and val = #{val}</if>
+            <if test="time != null "> and time = #{time}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="createdAt != null "> and created_at = #{createdAt}</if>
+            <if test="updatedAt != null "> and updated_at = #{updatedAt}</if>
+        </where>
+    </select>
+
+    <select id="selectXrayTrafficCollectById" parameterType="Long" resultMap="XrayTrafficCollectResult">
+        <include refid="selectXrayTrafficCollectVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertXrayTrafficCollect" parameterType="XrayTrafficCollect">
+        insert into xray_traffic_collect
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="clientIp != null">client_ip,</if>
+            <if test="email != null">email,</if>
+            <if test="level != null">level,</if>
+            <if test="type != null">type,</if>
+            <if test="val != null">val,</if>
+            <if test="time != null">time,</if>
+            <if test="status != null">status,</if>
+            <if test="createdAt != null">created_at,</if>
+            <if test="updatedAt != null">updated_at,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="clientIp != null">#{clientIp},</if>
+            <if test="email != null">#{email},</if>
+            <if test="level != null">#{level},</if>
+            <if test="type != null">#{type},</if>
+            <if test="val != null">#{val},</if>
+            <if test="time != null">#{time},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+            <if test="updatedAt != null">#{updatedAt},</if>
+        </trim>
+    </insert>
+
+    <update id="updateXrayTrafficCollect" parameterType="XrayTrafficCollect">
+        update xray_traffic_collect
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="clientIp != null">client_ip = #{clientIp},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="level != null">level = #{level},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="val != null">val = #{val},</if>
+            <if test="time != null">time = #{time},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteXrayTrafficCollectById" parameterType="Long">
+        delete from xray_traffic_collect where id = #{id}
+    </delete>
+
+    <delete id="deleteXrayTrafficCollectByIds" parameterType="String">
+        delete from xray_traffic_collect where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

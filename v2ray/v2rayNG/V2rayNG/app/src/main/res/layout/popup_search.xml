@@ -1,0 +1,32 @@
+<!-- res/layout/popup_filter.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_popup"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/option_all"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:text="全部"
+        android:textColor="#000000" />
+
+    <TextView
+        android:id="@+id/option_type1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:text="US"
+        android:textColor="#000000" />
+
+    <TextView
+        android:id="@+id/option_type2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:text="GB"
+        android:textColor="#000000" />
+</LinearLayout>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.XrayUserMapper">
+    
+    <resultMap type="XrayUser" id="XrayUserResult">
+        <result property="id"    column="id"    />
+        <result property="uuid"    column="uuid"    />
+        <result property="username"    column="username"    />
+        <result property="nick"    column="nick"    />
+        <result property="country"    column="country"    />
+        <result property="deviceId"    column="device_id"    />
+        <result property="password"    column="password"    />
+        <result property="email"    column="email"    />
+        <result property="uniqueEmail"    column="unique_email"    />
+        <result property="provider"    column="provider"    />
+        <result property="providerUserId"    column="provider_user_id"    />
+        <result property="providerUsername"    column="provider_username"    />
+        <result property="providerAvatarUrl"    column="provider_avatar_url"    />
+        <result property="status"    column="status"    />
+        <result property="usedTraffic"    column="used_traffic"    />
+        <result property="expiration"    column="expiration"    />
+        <result property="cumulativeMonths"    column="cumulative_months"    />
+        <result property="inviteCode"    column="invite_code"    />
+        <result property="createdAt"    column="created_at"    />
+        <result property="updatedAt"    column="updated_at"    />
+    </resultMap>
+
+    <sql id="selectXrayUserVo">
+        select id, uuid, username, nick, country, device_id, password, email, unique_email, provider, provider_user_id, provider_username, provider_avatar_url, status, used_traffic, expiration, cumulative_months, invite_code, type, created_at, updated_at from xray_user
+    </sql>
+
+    <update id="updateTrafficByEmail">
+        UPDATE xray_user
+        SET used_traffic = #{usedTraffic}
+        WHERE unique_email = #{email}
+    </update>
+
+    <select id="selectXrayUserList" parameterType="XrayUser" resultMap="XrayUserResult">
+        <include refid="selectXrayUserVo"/>
+        <where>  
+            <if test="uuid != null  and uuid != ''"> and uuid = #{uuid}</if>
+            <if test="username != null  and username != ''"> and username like concat('%', #{username}, '%')</if>
+            <if test="password != null  and password != ''"> and password = #{password}</if>
+            <if test="nick != null  and nick != ''"> and nick = #{nick}</if>
+            <if test="country != null  and country != ''"> and country = #{country}</if>
+            <if test="deviceId != null  and deviceId != ''"> and device_id = #{deviceId}</if>
+            <if test="email != null  and email != ''"> and email = #{email}</if>
+            <if test="uniqueEmail != null  and uniqueEmail != ''"> and unique_email = #{uniqueEmail}</if>
+            <if test="provider != null  and provider != ''"> and provider = #{provider}</if>
+            <if test="providerUserId != null  and providerUserId != ''"> and provider_user_id = #{providerUserId}</if>
+            <if test="providerUsername != null  and providerUsername != ''"> and provider_username like concat('%', #{providerUsername}, '%')</if>
+            <if test="providerAvatarUrl != null  and providerAvatarUrl != ''"> and provider_avatar_url = #{providerAvatarUrl}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="usedTraffic != null "> and used_traffic = #{usedTraffic}</if>
+            <if test="expiration != null "> and expiration = #{expiration}</if>
+            <if test="cumulativeMonths != null "> and cumulative_months = #{cumulativeMonths}</if>
+            <if test="type != null  and type != ''"> and `type` = #{type}</if>
+            <if test="inviteCode != null "> and invite_code = #{inviteCode}</if>
+            <if test="createdAt != null "> and created_at = #{createdAt}</if>
+            <if test="updatedAt != null "> and updated_at = #{updatedAt}</if>
+        </where>
+    </select>
+
+    <select id="selectXrayUserListV2" resultMap="XrayUserResult">
+        <include refid="selectXrayUserVo"/>
+        <where>
+            <if test="search != null  and search != ''"> and (username like concat('%', #{search}, '%') or email like concat('%', #{search}, '%'))</if>
+            <if test="belong != null  and belong != ''"> and `type` = #{belong}</if>
+            <if test="startTime != null "> and created_at &gt;= #{startTime}</if>
+            <if test="endTime != null "> and created_at &lt; #{endTime}</if>
+        </where>
+    </select>
+
+
+    <select id="findByProviderUserId" parameterType="map"  resultMap="XrayUserResult">
+        <include refid="selectXrayUserVo"/>
+        WHERE provider = #{provider} AND provider_user_id = #{providerUserId}
+    </select>
+
+
+    <select id="selectXrayUserById" parameterType="Long" resultMap="XrayUserResult">
+        <include refid="selectXrayUserVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertXrayUser" parameterType="XrayUser" useGeneratedKeys="true" keyProperty="id">
+        insert into xray_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="uuid != null and uuid != ''">uuid,</if>
+            <if test="username != null and username != ''">username,</if>
+            <if test="nick != null and nick != ''">nick,</if>
+            <if test="country != null and country != ''">country,</if>
+            <if test="deviceId != null  and deviceId != ''">device_id,</if>
+            <if test="password != null">password,</if>
+            <if test="email != null">email,</if>
+            <if test="uniqueEmail != null and uniqueEmail != ''">unique_email,</if>
+            <if test="provider != null">provider,</if>
+            <if test="providerUserId != null">provider_user_id,</if>
+            <if test="providerUsername != null">provider_username,</if>
+            <if test="providerAvatarUrl != null">provider_avatar_url,</if>
+            <if test="status != null">status,</if>
+            <if test="usedTraffic != null">used_traffic,</if>
+            <if test="expiration != null">expiration,</if>
+            <if test="cumulativeMonths != null">cumulative_months,</if>
+            <if test="type != null">type,</if>
+            <if test="inviteCode != null">invite_code,</if>
+            <if test="createdAt != null">created_at,</if>
+            <if test="updatedAt != null">updated_at,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="uuid != null and uuid != ''">#{uuid},</if>
+            <if test="username != null and username != ''">#{username},</if>
+            <if test="nick != null and nick != ''">#{nick},</if>
+            <if test="country != null and country != ''">#{country},</if>
+            <if test="deviceId != null  and deviceId != ''">#{deviceId},</if>
+            <if test="password != null">#{password},</if>
+            <if test="email != null">#{email},</if>
+            <if test="uniqueEmail != null and uniqueEmail != ''">#{uniqueEmail},</if>
+            <if test="provider != null">#{provider},</if>
+            <if test="providerUserId != null">#{providerUserId},</if>
+            <if test="providerUsername != null">#{providerUsername},</if>
+            <if test="providerAvatarUrl != null">#{providerAvatarUrl},</if>
+            <if test="status != null">#{status},</if>
+            <if test="usedTraffic != null">#{usedTraffic},</if>
+            <if test="expiration != null">#{expiration},</if>
+            <if test="cumulativeMonths != null">#{cumulativeMonths},</if>
+            <if test="type != null">#{type},</if>
+            <if test="inviteCode != null">#{inviteCode},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+            <if test="updatedAt != null">#{updatedAt},</if>
+         </trim>
+    </insert>
+
+    <update id="updateXrayUser" parameterType="XrayUser">
+        update xray_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="uuid != null and uuid != ''">uuid = #{uuid},</if>
+            <if test="username != null and username != ''">username = #{username},</if>
+            <if test="nick != null and nick != ''">nick = #{nick},</if>
+            <if test="country != null and country != ''">country = #{country},</if>
+            <if test="deviceId != null  and deviceId != ''">device_id = #{deviceId},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="uniqueEmail != null and uniqueEmail != ''">unique_email = #{uniqueEmail},</if>
+            <if test="provider != null">provider = #{provider},</if>
+            <if test="providerUserId != null">provider_user_id = #{providerUserId},</if>
+            <if test="providerUsername != null">provider_username = #{providerUsername},</if>
+            <if test="providerAvatarUrl != null">provider_avatar_url = #{providerAvatarUrl},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="usedTraffic != null">used_traffic = #{usedTraffic},</if>
+            <if test="expiration != null">expiration = #{expiration},</if>
+            <if test="cumulativeMonths != null">cumulative_months = #{cumulativeMonths},</if>
+            <if test="type != null">`type` = #{type},</if>
+            <if test="inviteCode != null">invite_code = #{inviteCode},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteXrayUserById" parameterType="Long">
+        delete from xray_user where id = #{id}
+    </delete>
+
+    <delete id="deleteXrayUserByIds" parameterType="String">
+        delete from xray_user where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

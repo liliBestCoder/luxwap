@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html  lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户设置 - Luxwap管理后台</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/buttons.css">
+    <link rel="stylesheet" href="../css/all.min.css">
+</head>
+<body>
+    <div class="page-header">
+        <h1 class="page-title">用户设置</h1>
+        <p class="page-subtitle">用户的安全和相关设置</p>
+    </div>
+	
+	
+    <!-- 常规设置模块 -->
+    <div id="guard-tab" class="main-tab-content">
+        <!-- 基本信息设置 -->
+        <div class="card" id="basicInfoCard">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-user-cog"></i> 基本信息设置
+                </h3>
+            </div>
+            
+            <div class="card-body">
+<!--                &lt;!&ndash; 修改用户名 &ndash;&gt;-->
+<!--                <div class="form-group">-->
+<!--                    <label class="form-label" for="current-username">当前用户名</label>-->
+<!--                    <div style="display: flex; gap: 10px; align-items: center;">-->
+<!--                        <input type="text" class="form-control-auto" id="current-username" value="admin" readonly>-->
+<!--                        <button class="btn btn-primary" onclick="editUsername()">-->
+<!--                            <i class="fas fa-edit"></i> 修改-->
+<!--                        </button>-->
+<!--                    </div>-->
+<!--                    <div id="username-edit-form" style="display: none; margin-top: 10px;">-->
+<!--                        <input type="text" class="form-control-auto" id="new-username" placeholder="请输入新用户名" style="margin-bottom: 10px;">-->
+<!--                        <div style="display: flex; gap: 10px;">-->
+<!--                            <button class="btn btn-success" onclick="saveUsername()">-->
+<!--                                <i class="fas fa-save"></i> 保存-->
+<!--                            </button>-->
+<!--                            <button class="btn btn-secondary" onclick="cancelUsernameEdit()">-->
+<!--                                <i class="fas fa-times"></i> 取消-->
+<!--                            </button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; 修改登录邮箱 &ndash;&gt;-->
+<!--                <div class="form-group">-->
+<!--                    <label class="form-label" for="current-email">当前登录邮箱</label>-->
+<!--                    <div style="display: flex; gap: 10px; align-items: center;">-->
+<!--                        <input type="email" class="form-control-auto" id="current-email" value="admin@example.com" readonly>-->
+<!--                        <button class="btn btn-primary" onclick="editEmail()">-->
+<!--                            <i class="fas fa-edit"></i> 修改-->
+<!--                        </button>-->
+<!--                    </div>-->
+<!--                    <div id="email-edit-form" style="display: none; margin-top: 10px;">-->
+<!--                        <div style="display: flex; flex-direction: column">-->
+<!--                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">-->
+<!--                                <input type="email" class="form-control-auto" id="new-email" placeholder="请输入新邮箱地址">-->
+<!--                                <button class="btn btn-secondary" id="send-verify-code" onclick="sendEmailVerifyCode()">-->
+<!--                                    发送验证码-->
+<!--                                </button>-->
+<!--                            </div>-->
+<!--                            <input type="text" class="form-control-auto" id="email-verify-code" placeholder="请输入邮箱验证码" style="margin-bottom: 10px;">-->
+<!--                        </div>-->
+<!--                        <div style="display: flex; gap: 10px;">-->
+<!--                            <button class="btn btn-success" onclick="saveEmail()">-->
+<!--                                <i class="fas fa-save"></i> 保存-->
+<!--                            </button>-->
+<!--                            <button class="btn btn-secondary" onclick="cancelEmailEdit()">-->
+<!--                                <i class="fas fa-times"></i> 取消-->
+<!--                            </button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+                <!-- 修改密码 -->
+                <div class="form-group">
+                    <label class="form-label">修改登录密码</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="password" class="form-control-auto" value="••••••••" readonly>
+                        <button class="btn btn-primary" onclick="editPassword()">
+                            <i class="fas fa-key"></i> 修改密码
+                        </button>
+                    </div>
+                    <div id="password-edit-form" style="display: none; margin-top: 10px;">
+						<div style="display: flex; flex-direction: column">
+                        <input type="password" class="form-control-auto" id="current-password" placeholder="请输入当前密码" style="margin-bottom: 10px;">
+                        <input type="password" class="form-control-auto" id="new-password" placeholder="请输入新密码" style="margin-bottom: 10px;">
+                        <input type="password" class="form-control-auto" id="confirm-password" placeholder="请确认新密码" style="margin-bottom: 10px;">
+							</div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-success" onclick="savePassword()">
+                                <i class="fas fa-save"></i> 更新密码
+                            </button>
+                            <button class="btn btn-secondary" onclick="cancelPasswordEdit()">
+                                <i class="fas fa-times"></i> 取消
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!--        &lt;!&ndash; 安全设置 &ndash;&gt;-->
+<!--        <div class="card" id="securityCard">-->
+<!--            <div class="card-header">-->
+<!--                <h3 class="card-title">-->
+<!--                    <i class="fas fa-shield-alt"></i> 安全设置-->
+<!--                </h3>-->
+<!--            </div>-->
+<!--            -->
+<!--            <div class="card-body">-->
+<!--                &lt;!&ndash; 双因素认证2FA &ndash;&gt;-->
+<!--                <div class="form-group">-->
+<!--                    <label class="form-label">双因素认证 (TOTP)</label>-->
+<!--                    <div style="display: flex; align-items: center; width: auto; padding: 15px; border: 1px solid var(&#45;&#45;border-color); border-radius: 8px; background: var(&#45;&#45;background-light);">-->
+<!--                        <div style="width: 180px">-->
+<!--                            <div style="font-weight: 500; margin-bottom: 5px;">-->
+<!--                                <i class="fas fa-mobile-alt" style="margin-right: 8px;"></i>-->
+<!--                                TOTP 身份验证器-->
+<!--                            </div>-->
+<!--                            <div style="color: var(&#45;&#45;text-secondary); font-size: 13px;" id="totp-status">-->
+<!--                                当前状态: <span id="totp-status-text" style="color: var(&#45;&#45;danger-color);">未启用</span>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <button class="btn btn-primary" vid="totp-toggle-btn" onclick="toggleTOTP()">-->
+<!--                            <i class="fas fa-qrcode"></i> 启用2FA-->
+<!--                        </button>-->
+<!--                    </div>-->
+<!--                    -->
+<!--                    &lt;!&ndash; TOTP设置表单 &ndash;&gt;-->
+<!--&lt;!&ndash;                    <div id="totp-setup-form" style="display: none; margin-top: 15px; padding: 20px; border: 1px solid var(&#45;&#45;border-color); border-radius: 8px; background: var(&#45;&#45;background-light);">&ndash;&gt;-->
+<!--&lt;!&ndash;                        <h4 style="margin-bottom: 15px;">设置双因素认证</h4>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <div style="text-align: center; margin-bottom: 20px;">&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div id="qr-code-container" style="background: white; padding: 20px; border-radius: 8px; display: inline-block;">&ndash;&gt;-->
+<!--&lt;!&ndash;                                <div style="width: 200px; height: 200px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border: 2px dashed #ccc;">&ndash;&gt;-->
+<!--&lt;!&ndash;                                    <span style="color: #999;">二维码生成中...</span>&ndash;&gt;-->
+<!--&lt;!&ndash;                                </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <p style="margin: 15px 0 5px; font-size: 14px; color: var(&#45;&#45;text-secondary);">&ndash;&gt;-->
+<!--&lt;!&ndash;                                请使用Google Authenticator或类似的TOTP应用扫描二维码&ndash;&gt;-->
+<!--&lt;!&ndash;                            </p>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <div style="background: var(&#45;&#45;background-color); padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; margin-bottom: 20px;">&ndash;&gt;-->
+<!--&lt;!&ndash;                                备用密钥: <span id="totp-secret">JBSWY3DPEHPK3PXP</span>&ndash;&gt;-->
+<!--&lt;!&ndash;                            </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                        </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <div class="form-group" style="display: flex; flex-direction: column; align-items: center;">&ndash;&gt;-->
+<!--&lt;!&ndash;                            <label class="form-label" for="totp-verify-code" style="margin-bottom: 6px;">请输入验证码验证设置</label>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <input type="text" class="form-control-auto" id="totp-verify-code" placeholder="输入6位验证码" maxlength="6" style="text-align: center; font-size: 18px; letter-spacing: 3px;">&ndash;&gt;-->
+<!--&lt;!&ndash;                        </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <div style="display: flex; gap: 10px; justify-content: center;">&ndash;&gt;-->
+<!--&lt;!&ndash;                            <button class="btn btn-success" onclick="confirmTOTPSetup()">&ndash;&gt;-->
+<!--&lt;!&ndash;                                <i class="fas fa-check"></i> 确认启用&ndash;&gt;-->
+<!--&lt;!&ndash;                            </button>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <button class="btn btn-secondary" onclick="cancelTOTPSetup()">&ndash;&gt;-->
+<!--&lt;!&ndash;                                <i class="fas fa-times"></i> 取消&ndash;&gt;-->
+<!--&lt;!&ndash;                            </button>&ndash;&gt;-->
+<!--&lt;!&ndash;                        </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </div>&ndash;&gt;-->
+
+<!--                    &lt;!&ndash; TOTP禁用确认 &ndash;&gt;-->
+<!--&lt;!&ndash;                    <div id="totp-disable-form" style="display: none; margin-top: 15px; padding: 20px; border: 1px solid var(&#45;&#45;danger-color); border-radius: 8px; background: #fef2f2;">&ndash;&gt;-->
+<!--&lt;!&ndash;                        <h4 style="color: var(&#45;&#45;danger-color); margin-bottom: 15px;">&ndash;&gt;-->
+<!--&lt;!&ndash;                            <i class="fas fa-exclamation-triangle"></i> 禁用双因素认证&ndash;&gt;-->
+<!--&lt;!&ndash;                        </h4>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <p style="margin-bottom: 15px; color: var(&#45;&#45;text-secondary);">&ndash;&gt;-->
+<!--&lt;!&ndash;                            禁用2FA将降低您账户的安全性。请输入当前密码确认此操作：&ndash;&gt;-->
+<!--&lt;!&ndash;                        </p>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <div class="form-group">&ndash;&gt;-->
+<!--&lt;!&ndash;                            <input type="password" class="form-control-auto" id="totp-disable-password" placeholder="请输入当前登录密码">&ndash;&gt;-->
+<!--&lt;!&ndash;                        </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <div style="display: flex; gap: 10px; justify-content: center;">&ndash;&gt;-->
+<!--&lt;!&ndash;                            <button class="btn btn-danger" onclick="confirmTOTPDisable()">&ndash;&gt;-->
+<!--&lt;!&ndash;                                <i class="fas fa-times"></i> 确认禁用&ndash;&gt;-->
+<!--&lt;!&ndash;                            </button>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <button class="btn btn-secondary" onclick="cancelTOTPDisable()">&ndash;&gt;-->
+<!--&lt;!&ndash;                                <i class="fas fa-arrow-left"></i> 取消&ndash;&gt;-->
+<!--&lt;!&ndash;                            </button>&ndash;&gt;-->
+<!--&lt;!&ndash;                        </div>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </div>&ndash;&gt;-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+        <!-- 显示设置 -->
+        <div class="card" id="displayCard">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-list"></i> 显示设置
+                </h3>
+            </div>
+            
+            <div class="card-body">
+                <!-- 每页显示记录数 -->
+                <div class="form-group">
+                    <label class="form-label" for="page-size-setting">每页显示记录数</label>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <select class="form-control-auto" id="page-size-setting" style="max-width: 200px;" onchange="updatePageSize(this.value)">
+                            <option value="20" selected>20条/页</option>
+                            <option value="50">50条/页</option>
+                            <option value="100">100条/页</option>
+                        </select>
+                        <div style="color: var(--text-secondary); font-size: 13px;">
+                            <i class="fas fa-info-circle"></i> 
+                            此设置将应用到所有数据表格
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="btn btn-success" onclick="saveDisplaySettings()">
+                            <i class="fas fa-save"></i> 保存设置
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetDisplaySettings()" style="margin-left: 10px;">
+                            <i class="fas fa-undo"></i> 重置为默认
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card" id="basicSettingsCard">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-user-cog"></i> 会话设置
+                </h3>
+            </div>
+
+            <div class="card-body">
+                <div class="form-group">
+                    <div id="password-edit-form-1" style="display: block; margin-top: 10px;">
+                        <div>
+                            <input type="text" class="form-control-auto" th:value="${loginName}"  style="margin-bottom: 10px;" disabled>
+                            <button class="btn btn-success" onclick="logout()">
+                                <i class="fas fa-save"></i> 退出登录
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>	
+    <!-- 页面脚本 -->
+    <script src="../JS/common.js" defer></script>
+    <script src="../JS/settings.js" defer></script>	
+
+</body>
+</html>

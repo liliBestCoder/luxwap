@@ -1,0 +1,45 @@
+[
+  {
+    "remarks": "Google cn",
+    "outboundTag": "proxy",
+    "domain": [
+      "domain:googleapis.cn",
+      "domain:gstatic.com"
+    ]
+  },
+  {
+    "remarks": "passByIp",
+    "outboundTag": "direct",
+    "ip": [
+      "${geoip}"
+    ]
+  },
+  {
+    "remarks": "passByDomain",
+    "outboundTag": "direct",
+    "domain": [
+      "${geosite}"
+    ]
+  },
+  {
+    "remarks": "passByVlanIp",
+    "outboundTag": "direct",
+    "ip": [
+      "geoip:private"
+    ]
+  },
+  {
+    "remarks": "passByVlanDomain",
+    "outboundTag": "direct",
+    "domain": [
+      "geosite:private"
+    ]
+  },
+  {
+    "remarks": "blockAds",
+    "outboundTag": "direct",
+    "domain": [
+      "geosite:category-ads-all"
+    ]
+  }
+]

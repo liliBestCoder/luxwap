@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户信息 - Luxwap管理后台</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/buttons.css">
+    <link rel="stylesheet" href="../css/all.min.css">
+    <link rel="stylesheet" href="../css/simplePagination.css">
+    <script src="../JS/jquery.min.js"></script>
+    <script src="../JS/jquery.simplePagination.min.js"></script>
+</head>
+<body>
+    <div class="page-header">
+        <h1 class="page-title">用户信息</h1>
+    </div>
+
+    <!-- 🔴搜索和筛选区域 -->
+    <div class="card" id="usersSelect">
+
+        <div class="card-header">
+            <h3 class="card-title">用户筛选</h3>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div style="flex: 1; min-width: 200px;">
+                <label class="form-label">搜索用户</label>
+                <input type="text" class="form-control" placeholder="输入用户名、邮箱或手机号..." id="searchInput">
+            </div>
+            <div style="min-width: 150px;">
+                <label class="form-label">归属</label>
+                <select class="form-control" id="statusFilter">
+                    <option value="">全部</option>
+                    <option value="inner">内部</option>
+                    <option value="outer">分销商</option>
+
+                </select>
+            </div>
+            <div style="min-width: 150px;">
+                <label class="form-label">注册时间</label>
+                <select class="form-control" id="timeFilter">
+                    <option value="">全部时间</option>
+                    <option value="today">今天</option>
+                    <option value="current_week">本周</option>
+                    <option value="current_month">本月</option>
+                </select>
+            </div>			
+			<div style="display: flex; align-items: end; gap: 10px;">
+            	<button class="btn btn-primary" onclick="searchUsers()">
+                <i class="fas fa-search"></i> 搜索
+            	</button>
+            	<button class="btn btn-secondary" onclick="clearFilter()">
+                <i class="fas fa-refresh"></i> 重置
+            	</button>
+			</div>
+        </div>
+    </div>
+
+    <!-- 🔴用户列表 -->
+    <div class="card" id="usersList">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 class="card-title">用户列表</h3>
+        </div>
+        
+        <div style="overflow-x: auto;">
+            <table class="table" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>用户ID</th>
+                        <th>用户名</th>
+                        <th>用户Email&nbsp;</th>
+                        <th>注册时间</th>
+                        <th>有效期</th>
+                        <th>当月使用流量</th>
+                        <th>归属</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <!-- 动态渲染 -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 🔴分页 -->    
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+            <div id="pagination-info-users" style="color: var(--text-secondary); font-size: 13px;">
+                显示 1-4 条，共 4 条记录
+            </div>
+            <div id="pagination-container-users"></div>
+        </div>
+    
+    </div>
+
+    <!-- Scripts -->
+    <script src="../JS/common.js" id="scriptCommon" defer></script>
+    <script src="../JS/users.js" id="scriptUsers" defer></script>
+    <script src="../JS/search.js" id="scriptSearch" defer></script>
+</body>
+</html>

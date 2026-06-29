@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.system.mapper.XrayDistributorsConfigMapper">
+
+    <resultMap id="BaseResultMap" type="com.ruoyi.system.domain.XrayDistributorsConfig">
+        <id column="id" property="id" />
+        <result column="commission_rate" property="commissionRate" />
+        <result column="first_charge_bonus" property="firstChargeBonus" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+    </resultMap>
+
+    <!-- 查询单条 -->
+    <select id="selectXrayDistributorsConfigById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT id, commission_rate, first_charge_bonus, created_at, updated_at
+        FROM xray_distributors_config
+        WHERE id = #{id}
+    </select>
+
+    <!-- 查询列表 -->
+    <select id="selectXrayDistributorsConfigList" resultMap="BaseResultMap" parameterType="com.ruoyi.system.domain.XrayDistributorsConfig">
+        SELECT id, commission_rate, first_charge_bonus, created_at, updated_at
+        FROM xray_distributors_config
+        <where>
+            <if test="commissionRate != null">
+                AND commission_rate = #{commissionRate}
+            </if>
+            <if test="firstChargeBonus != null">
+                AND first_charge_bonus = #{firstChargeBonus}
+            </if>
+        </where>
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insertXrayDistributorsConfig" parameterType="com.ruoyi.system.domain.XrayDistributorsConfig" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO xray_distributors_config
+            (commission_rate, first_charge_bonus, created_at, updated_at)
+        VALUES
+            (#{commissionRate}, #{firstChargeBonus}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <!-- 修改 -->
+    <update id="updateXrayDistributorsConfig" parameterType="com.ruoyi.system.domain.XrayDistributorsConfig">
+        UPDATE xray_distributors_config
+        <set>
+            <if test="commissionRate != null">
+                commission_rate = #{commissionRate},
+            </if>
+            <if test="firstChargeBonus != null">
+                first_charge_bonus = #{firstChargeBonus},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除单条 -->
+    <delete id="deleteXrayDistributorsConfigById" parameterType="java.lang.Long">
+        DELETE FROM xray_distributors_config WHERE id = #{id}
+    </delete>
+
+    <!-- 批量删除 -->
+    <delete id="deleteXrayDistributorsConfigByIds" parameterType="java.util.List">
+        DELETE FROM xray_distributors_config WHERE id IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

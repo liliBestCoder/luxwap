@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.VpnLinesMapper">
+    
+    <resultMap type="VpnLines" id="VpnLinesResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="region"    column="region"    />
+        <result property="type"    column="type"    />
+        <result property="bandwidth"    column="bandwidth"    />
+        <result property="remainingTraffic"    column="remaining_traffic"    />
+        <result property="totalTraffic"    column="total_traffic"    />
+        <result property="connectionCnt"    column="connection_cnt"    />
+        <result property="maxConnectionCnt"    column="max_connection_cnt"    />
+        <result property="pingDelay"    column="ping_delay"    />
+        <result property="pingOffset"    column="ping_offset"    />
+        <result property="ip"    column="ip"    />
+        <result property="port"    column="port"    />
+        <result property="keyword"    column="keyword"    />
+        <result property="status"    column="status"    />
+        <result property="protocol"    column="protocol"    />
+        <result property="createdAt"    column="created_at"    />
+        <result property="updatedAt"    column="updated_at"    />
+    </resultMap>
+
+    <sql id="selectVpnLinesVo">
+        select id, name, region, `type`, bandwidth, remaining_traffic, total_traffic, connection_cnt, max_connection_cnt, ping_delay, ping_offset, `ip`, `port`, `keyword`, `status`, `protocol`, created_at, updated_at from vpn_lines
+    </sql>
+
+    <select id="selectVpnLinesList" parameterType="VpnLines" resultMap="VpnLinesResult">
+        <include refid="selectVpnLinesVo"/>
+        <where>  
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="region != null  and region != ''"> and region = #{region}</if>
+            <if test="type != null  and type != ''"> and `type` = #{type}</if>
+            <if test="bandwidth != null"> and bandwidth = #{bandwidth}</if>
+            <if test="remainingTraffic != null  and remainingTraffic != ''"> and remaining_traffic = #{remainingTraffic}</if>
+            <if test="totalTraffic != null  and totalTraffic != ''"> and total_traffic = #{totalTraffic}</if>
+            <if test="connectionCnt != null "> and connection_cnt = #{connectionCnt}</if>
+            <if test="maxConnectionCnt != null "> and max_connection_cnt = #{maxConnectionCnt}</if>
+            <if test="pingDelay != null "> and ping_delay = #{pingDelay}</if>
+            <if test="pingOffset != null "> and ping_offset = #{pingOffset}</if>
+            <if test="ip != null  and ip != ''"> and `ip` = #{ip}</if>
+            <if test="port != null  and port != ''"> and `port` = #{port}</if>
+            <if test="keyword != null  and keyword != ''"> and keyword = #{keyword}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="protocol != null  and protocol != ''"> and protocol = #{protocol}</if>
+            <if test="createdAt != null "> and created_at = #{createdAt}</if>
+            <if test="updatedAt != null "> and updated_at = #{updatedAt}</if>
+        </where>
+    </select>
+    
+    <select id="selectVpnLinesById" parameterType="String" resultMap="VpnLinesResult">
+        <include refid="selectVpnLinesVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertVpnLines" parameterType="VpnLines" useGeneratedKeys="true" keyProperty="id">
+        insert into vpn_lines
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">name,</if>
+            <if test="region != null">region,</if>
+            <if test="type != null">`type`,</if>
+            <if test="bandwidth != null">bandwidth,</if>
+            <if test="remainingTraffic != null">remaining_traffic,</if>
+            <if test="totalTraffic != null">total_traffic,</if>
+            <if test="connectionCnt != null">connection_cnt,</if>
+            <if test="maxConnectionCnt != null ">max_connection_cnt,</if>
+            <if test="pingDelay != null">ping_delay,</if>
+            <if test="pingOffset != null ">ping_offset,</if>
+            <if test="ip != null and ip != ''">`ip`,</if>
+            <if test="port != null and port != ''">`port`,</if>
+            <if test="keyword != null">keyword,</if>
+            <if test="status != null">status,</if>
+            <if test="protocol != null">protocol,</if>
+            <if test="createdAt != null">created_at,</if>
+            <if test="updatedAt != null">updated_at,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="region != null">#{region},</if>
+            <if test="type != null">#{type},</if>
+            <if test="bandwidth != null">#{bandwidth},</if>
+            <if test="remainingTraffic != null">#{remainingTraffic},</if>
+            <if test="totalTraffic != null">#{totalTraffic},</if>
+            <if test="connectionCnt != null">#{connectionCnt},</if>
+            <if test="maxConnectionCnt != null ">#{maxConnectionCnt},</if>
+            <if test="pingDelay != null">#{pingDelay},</if>
+            <if test="pingOffset != null ">#{pingOffset},</if>
+            <if test="ip != null and ip != ''">#{ip},</if>
+            <if test="port != null and port != ''">#{port},</if>
+            <if test="keyword != null">#{keyword},</if>
+            <if test="status != null">#{status},</if>
+            <if test="protocol != null">#{protocol},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+            <if test="updatedAt != null">#{updatedAt},</if>
+         </trim>
+    </insert>
+
+    <update id="updateVpnLines" parameterType="VpnLines">
+        update vpn_lines
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="region != null">region = #{region},</if>
+            <if test="type != null">`type` = #{type},</if>
+            <if test="bandwidth != null">bandwidth = #{bandwidth},</if>
+            <if test="remainingTraffic != null">remaining_traffic = #{remainingTraffic},</if>
+            <if test="totalTraffic != null">total_traffic = #{totalTraffic},</if>
+            <if test="connectionCnt != null">connection_cnt = #{connectionCnt},</if>
+            <if test="maxConnectionCnt != null ">max_connection_cnt = #{maxConnectionCnt},</if>
+            <if test="pingDelay != null">ping_delay = #{pingDelay},</if>
+            <if test="pingOffset != null ">ping_offset = #{pingOffset},</if>
+            <if test="ip != null and ip != ''">ip = #{ip},</if>
+            <if test="port != null and port != ''">port = #{port},</if>
+            <if test="keyword != null">keyword = #{keyword},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="protocol != null">protocol = #{protocol},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="updateTrafficByClientIp">
+        UPDATE vpn_lines
+        SET remaining_traffic = GREATEST(total_traffic - #{usedTraffic}, 0)
+        WHERE `ip` = #{clientIp}
+    </update>
+
+    <update id="updateStatusByClientIp">
+        update vpn_lines set status = #{status} where ip = #{clientIp}
+    </update>
+
+    <delete id="deleteVpnLinesById" parameterType="String">
+        delete from vpn_lines where id = #{id}
+    </delete>
+
+    <delete id="deleteVpnLinesByIds" parameterType="String">
+        delete from vpn_lines where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

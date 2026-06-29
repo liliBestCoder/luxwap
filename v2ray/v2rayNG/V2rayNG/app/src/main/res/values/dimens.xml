@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="padding_spacing_dp4">4dp</dimen>
+    <dimen name="padding_spacing_dp8">8dp</dimen>
+    <dimen name="padding_spacing_dp16">16dp</dimen>
+    <dimen name="image_size_dp24">24dp</dimen>
+    <dimen name="view_height_dp36">36dp</dimen>
+    <dimen name="view_height_dp48">48dp</dimen>
+    <dimen name="view_height_dp64">64dp</dimen>
+    <dimen name="view_height_dp160">160dp</dimen>
+    <!-- Tab 高度 -->
+    <dimen name="tab_height">48dp</dimen>
+
+    <!-- 指示器左右“灰线”长度 -->
+    <dimen name="indicator_side">24dp</dimen>
+
+    <!-- 指示器总高度（其实就是 1 px） -->
+    <dimen name="indicator_height">1dp</dimen>
+</resources>

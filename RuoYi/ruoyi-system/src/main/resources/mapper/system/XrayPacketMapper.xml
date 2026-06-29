@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.system.mapper.XrayPacketMapper">
+
+    <sql id="PacketColumns">
+        id,
+        name,
+        duration_months AS durationMonths,
+        bonus_months AS bonusMonths,
+        price,
+        price_per_month AS pricePerMonth,
+        description,
+        status,
+        sort_order AS sortOrder,
+        created_at AS createdAt,
+        updated_at AS updatedAt
+    </sql>
+
+    <select id="selectAllPackets" resultType="com.ruoyi.system.domain.XrayPacket">
+        SELECT <include refid="PacketColumns"/>
+        FROM xray_packet
+        ORDER BY sort_order ASC, duration_months ASC
+    </select>
+
+    <select id="selectEnabledPackets" resultType="com.ruoyi.system.domain.XrayPacket">
+        SELECT <include refid="PacketColumns"/>
+        FROM xray_packet
+        WHERE status = 1
+        ORDER BY sort_order ASC, duration_months ASC
+    </select>
+
+    <select id="selectPacketById" parameterType="long" resultType="com.ruoyi.system.domain.XrayPacket">
+        SELECT <include refid="PacketColumns"/>
+        FROM xray_packet
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insertPacket" parameterType="com.ruoyi.system.domain.XrayPacket" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO xray_packet (name, duration_months, bonus_months, price, price_per_month, description, status, sort_order, created_at, updated_at)
+        VALUES (#{name}, #{durationMonths}, #{bonusMonths}, #{price}, #{pricePerMonth}, #{description}, #{status}, #{sortOrder}, NOW(), NOW())
+    </insert>
+
+    <update id="updatePacket" parameterType="com.ruoyi.system.domain.XrayPacket">
+        UPDATE xray_packet
+        SET name = #{name},
+            duration_months = #{durationMonths},
+            bonus_months = #{bonusMonths},
+            price = #{price},
+            price_per_month = #{pricePerMonth},
+            description = #{description},
+            status = #{status},
+            sort_order = #{sortOrder},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deletePacketById" parameterType="long">
+        DELETE FROM xray_packet WHERE id = #{id}
+    </delete>
+
+</mapper>

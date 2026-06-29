@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.XrayUserSessionMapper">
+    
+    <resultMap type="XrayUserSession" id="XrayUserSessionResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="deviceId"    column="device_id"    />
+        <result property="os"    column="os"    />
+        <result property="token"    column="token"    />
+        <result property="tokenExpiration"    column="token_expiration"    />
+        <result property="deviceName"    column="device_name"    />
+        <result property="status"    column="status"    />
+        <result property="deviceType"    column="device_type"    />
+        <result property="createdAt"    column="created_at"    />
+        <result property="updatedAt"    column="updated_at"    />
+    </resultMap>
+
+    <sql id="selectXrayUserSessionVo">
+        select id, user_id, device_id, os, token, token_expiration, device_name, status, device_type, created_at, updated_at from xray_user_session
+    </sql>
+
+    <select id="getActiveDevicesByUserId" resultMap="XrayUserSessionResult">
+        SELECT device_id, device_type, os, device_name
+        FROM xray_user_session
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="selectXrayUserSessionList" parameterType="XrayUserSession" resultMap="XrayUserSessionResult">
+        <include refid="selectXrayUserSessionVo"/>
+        <where>  
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="deviceId != null  and deviceId != ''"> and device_id = #{deviceId}</if>
+            <if test="os != null  and os != ''"> and os = #{os}</if>
+            <if test="token != null  and token != ''"> and token = #{token}</if>
+            <if test="tokenExpiration != null "> and token_expiration = #{tokenExpiration}</if>
+            <if test="deviceName != null  and deviceName != ''"> and device_name like concat('%', #{deviceName}, '%')</if>
+            <if test="status != null">and status = #{status}</if>
+            <if test="deviceType != null  and deviceType != ''"> and device_type = #{deviceType}</if>
+            <if test="createdAt != null "> and created_at = #{createdAt}</if>
+            <if test="updatedAt != null "> and updated_at = #{updatedAt}</if>
+        </where>
+    </select>
+    
+    <select id="selectXrayUserSessionById" parameterType="Long" resultMap="XrayUserSessionResult">
+        <include refid="selectXrayUserSessionVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertXrayUserSession" parameterType="XrayUserSession" useGeneratedKeys="true" keyProperty="id">
+        insert into xray_user_session
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="deviceId != null and deviceId != ''">device_id,</if>
+            <if test="os != null and os != ''">os,</if>
+            <if test="token != null">token,</if>
+            <if test="tokenExpiration != null">token_expiration,</if>
+            <if test="deviceName != null">device_name,</if>
+            <if test="status != null">status,</if>
+            <if test="deviceType != null">device_type,</if>
+            <if test="createdAt != null">created_at,</if>
+            <if test="updatedAt != null">updated_at,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="deviceId != null and deviceId != ''">#{deviceId},</if>
+            <if test="os != null and os != ''">#{os},</if>
+            <if test="token != null">#{token},</if>
+            <if test="tokenExpiration != null">#{tokenExpiration},</if>
+            <if test="deviceName != null">#{deviceName},</if>
+            <if test="status != null">#{status},</if>
+            <if test="deviceType != null">#{deviceType},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+            <if test="updatedAt != null">#{updatedAt},</if>
+         </trim>
+    </insert>
+
+    <update id="updateXrayUserSession" parameterType="XrayUserSession">
+        update xray_user_session
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="deviceId != null and deviceId != ''">device_id = #{deviceId},</if>
+            <if test="os != null and os != ''">os = #{os},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="token != null">token = #{token},</if>
+            <if test="tokenExpiration != null">token_expiration = #{tokenExpiration},</if>
+            <if test="deviceName != null">device_name = #{deviceName},</if>
+            <if test="deviceType != null">device_type = #{deviceType},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteXrayUserSessionById" parameterType="Long">
+        delete from xray_user_session where id = #{id}
+    </delete>
+
+    <delete id="deleteXrayUserSessionByIds" parameterType="String">
+        delete from xray_user_session where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

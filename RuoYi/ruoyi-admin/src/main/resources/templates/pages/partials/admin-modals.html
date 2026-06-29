@@ -1,0 +1,134 @@
+<!-- 新增支付接口模态框 -->
+<div id="addGatewayModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>新增支付接口</h3>
+      <span class="modal-close" onclick="closeAddGatewayModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" for="new-gateway-type">接口类型</label>
+        <select class="form-control" id="new-gateway-type" onchange="loadGatewayTemplate(this.value)">
+          <option value="">请选择接口类型</option>
+          <option value="custom">自定义接口</option>
+          <option value="unionpay">银联国际</option>
+          <option value="applepay">Apple Pay</option>
+          <option value="googlepay">Google Pay</option>
+          <option value="cryptocurrency">数字货币</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="new-gateway-name">接口名称</label>
+        <input type="text" class="form-control" id="new-gateway-name" placeholder="输入接口显示名称">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="new-gateway-description">接口描述</label>
+        <input type="text" class="form-control" id="new-gateway-description" placeholder="输入接口描述">
+      </div>
+      <div id="dynamic-config-fields"><!-- 动态配置字段将在这里生成 --></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnAddGatewayCancel" onclick="closeAddGatewayModal()">取消</button>
+      <button class="btn btn-success" id="btnAddGatewayConfirm" onclick="addNewGateway()">添加接口</button>
+    </div>
+  </div>
+</div>
+
+<!-- 添加用户模态框 -->
+<div id="userModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">添加用户</h3>
+      <span class="modal-close" onclick="closeUserModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <form id="userForm">
+        <input type="text" class="form-control" id="user_id" style="display: none">
+        <div class="form-group">
+          <label class="form-label" for="username">用户名</label>
+          <input type="text" class="form-control" id="username" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email">邮箱</label>
+          <input type="email" class="form-control" id="email" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="userStatus">状态</label>
+          <select name="userStatus" class="form-control" id="userStatus">
+            <option value="0">活跃</option>
+            <option value="1">待审核</option>
+            <option value="2">禁用</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email">有效期</label>
+          <input type="date" class="form-control" id="expiration" required>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" id="btnUserCancel" onclick="closeUserModal()">取消</button>
+          <button type="button" class="btn btn-primary" id="btnUserSave" onclick="updateUser()">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<div id="innerUserModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="innerModalTitle">添加用户</h3>
+      <span class="modal-close" onclick="closeInnerUserModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <form id="innerUserForm">
+        <div class="form-group">
+          <label class="form-label" for="inner_username">用户名</label>
+          <input type="text" class="form-control" id="inner_username" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inner_password">密码</label>
+          <input type="email" class="form-control" id="inner_password" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inner_type">角色</label>
+          <select name="userStatus" class="form-control" id="inner_type" required>
+            <option value="admin-slave">管理员</option>
+            <option value="support">客服</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" id="innerBtnUserCancel" onclick="closeInnerUserModal()">取消</button>
+          <button type="button" class="btn btn-primary" id="innerBtnUserSave" onclick="saveInnerUser()">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<div id="xrayDistributorsModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="xrayDistributorsModalTitle">编辑分销商</h3>
+      <span class="modal-close" onclick="closeDistributorModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <form id="xrayDistributorsForm">
+        <input type="text" class="form-control" id="distributors_id" style="display: none">
+        <div class="form-group">
+          <label class="form-label" for="inner_username">佣金比例</label>
+          <input type="number" class="form-control" id="distributors_commissionRate" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inner_password">首充返佣</label>
+          <input type="number" class="form-control" id="distributors_firstChargeBonus" required>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" id="xrayDistributorsCancel" onclick="closeDistributorModal()">取消</button>
+          <button type="button" class="btn btn-primary" id="xrayDistributorsSave" onclick="saveXrayDistributors()">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

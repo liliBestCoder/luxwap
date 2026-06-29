@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.XrayPaymentOrderMapper">
+
+    <resultMap type="com.ruoyi.system.domain.XrayPaymentOrder" id="XrayPaymentOrderResult">
+        <id property="id" column="id" />
+        <result property="userId" column="user_id" />
+        <result property="packetId" column="packet_id" />
+        <result property="orderNo" column="order_no" />
+        <result property="submitToken" column="submit_token" />
+        <result property="type" column="type" />
+        <result property="amount" column="amount" />
+        <result property="currency" column="currency" />
+        <result property="status" column="status" />
+        <result property="notifyUrl" column="notify_url" />
+        <result property="returnUrl" column="return_url" />
+        <result property="paymentUrl" column="payment_url" />
+        <result property="tradeNo" column="trade_no" />
+        <result property="paidAmount" column="paid_amount" />
+        <result property="paidCurrency" column="paid_currency" />
+        <result property="paidAt" column="paid_at" />
+        <result property="successAt" column="success_at" />
+        <result property="createdAt" column="created_at" />
+        <result property="updatedAt" column="updated_at" />
+        <result property="expiredAt" column="expired_at" />
+    </resultMap>
+
+    <insert id="insertXrayPaymentOrder" parameterType="com.ruoyi.system.domain.XrayPaymentOrder">
+        insert into xray_payment_order (
+            user_id, packet_id, order_no, submit_token, type, amount, currency, status, notify_url, return_url, payment_url,
+            trade_no, paid_amount, paid_currency, paid_at, success_at, created_at, updated_at, expired_at
+        )
+        values (
+            #{userId}, #{packetId}, #{orderNo}, #{submitToken}, #{type}, #{amount}, #{currency}, #{status}, #{notifyUrl}, #{returnUrl}, #{paymentUrl},
+            #{tradeNo}, #{paidAmount}, #{paidCurrency}, #{paidAt}, #{successAt}, #{createdAt}, #{updatedAt}, #{expiredAt}
+        )
+    </insert>
+
+    <select id="selectXrayPaymentOrderList" parameterType="com.ruoyi.system.domain.XrayPaymentOrder" resultMap="XrayPaymentOrderResult">
+        select id, user_id, packet_id, order_no, submit_token, type, amount, currency, status, notify_url, return_url, payment_url,
+               trade_no, paid_amount, paid_currency, paid_at, success_at, created_at, updated_at, expired_at
+        from xray_payment_order
+        <where>
+            <if test="orderNo != null and orderNo != ''">
+                AND order_no like concat('%', #{orderNo}, '%')
+            </if>
+            <if test="type != null and type != ''">
+                AND type = #{type}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="packetId != null">
+                AND packet_id = #{packetId}
+            </if>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="params.beginTime != null and params.beginTime != ''">
+                AND created_at &gt;= #{params.beginTime}
+            </if>
+            <if test="params.endTime != null and params.endTime != ''">
+                AND created_at &lt;= #{params.endTime}
+            </if>
+        </where>
+        order by created_at desc, id desc
+    </select>
+
+    <select id="selectXrayPaymentOrderByOrderNo" parameterType="String" resultMap="XrayPaymentOrderResult">
+        select id, user_id, packet_id, order_no, submit_token, type, amount, currency, status, notify_url, return_url, payment_url,
+               trade_no, paid_amount, paid_currency, paid_at, success_at, created_at, updated_at, expired_at
+        from xray_payment_order
+        where order_no = #{orderNo}
+    </select>
+
+    <select id="selectXrayPaymentOrderBySubmitToken" parameterType="String" resultMap="XrayPaymentOrderResult">
+        select id, user_id, packet_id, order_no, submit_token, type, amount, currency, status, notify_url, return_url, payment_url,
+               trade_no, paid_amount, paid_currency, paid_at, success_at, created_at, updated_at, expired_at
+        from xray_payment_order
+        where submit_token = #{submitToken}
+    </select>
+
+    <select id="selectReusablePendingOrder" parameterType="com.ruoyi.system.domain.XrayPaymentOrder" resultMap="XrayPaymentOrderResult">
+        select id, user_id, packet_id, order_no, submit_token, type, amount, currency, status, notify_url, return_url, payment_url,
+               trade_no, paid_amount, paid_currency, paid_at, success_at, created_at, updated_at, expired_at
+        from xray_payment_order
+        where user_id = #{userId}
+          and packet_id = #{packetId}
+          and type = #{type}
+          and amount = #{amount}
+          and currency = #{currency}
+          and status = 'PENDING'
+          and expired_at > NOW()
+        order by id desc
+        limit 1
+    </select>
+
+    <update id="updateXrayPaymentOrderStatus" parameterType="com.ruoyi.system.domain.XrayPaymentOrder">
+        update xray_payment_order
+        set
+            status = #{status},
+            updated_at = #{updatedAt}
+        where order_no = #{orderNo}
+    </update>
+
+    <update id="markOrderSuccessIfNotPaid" parameterType="com.ruoyi.system.domain.XrayPaymentOrder">
+        update xray_payment_order
+        set
+            status = 'SUCCESS',
+            trade_no = #{tradeNo},
+            paid_amount = #{paidAmount},
+            paid_currency = #{paidCurrency},
+            paid_at = #{paidAt},
+            success_at = NOW(),
+            updated_at = NOW()
+        where order_no = #{orderNo}
+          and status != 'SUCCESS'
+    </update>
+
+    <update id="updateXrayPaymentOrder" parameterType="com.ruoyi.system.domain.XrayPaymentOrder">
+        update xray_payment_order
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="submitToken != null">submit_token = #{submitToken},</if>
+            <if test="currency != null">currency = #{currency},</if>
+            <if test="paymentUrl != null">payment_url = #{paymentUrl},</if>
+            <if test="notifyUrl != null">notify_url = #{notifyUrl},</if>
+            <if test="returnUrl != null">return_url = #{returnUrl},</if>
+            <if test="tradeNo != null">trade_no = #{tradeNo},</if>
+            <if test="paidAmount != null">paid_amount = #{paidAmount},</if>
+            <if test="paidCurrency != null">paid_currency = #{paidCurrency},</if>
+            <if test="paidAt != null">paid_at = #{paidAt},</if>
+            <if test="successAt != null">success_at = #{successAt},</if>
+            <if test="expiredAt != null">expired_at = #{expiredAt},</if>
+            updated_at = NOW()
+        </set>
+        where order_no = #{orderNo}
+    </update>
+
+    <delete id="deleteXrayPaymentOrderByOrderNo" parameterType="String">
+        delete from xray_payment_order where order_no = #{orderNo}
+    </delete>
+
+    <update id="closeExpiredPendingOrders">
+        update xray_payment_order
+        set status = 'CLOSED',
+            updated_at = NOW()
+        where status = 'PENDING'
+          and expired_at is not null
+          and expired_at &lt;= NOW()
+    </update>
+
+</mapper>

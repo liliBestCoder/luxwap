@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html  lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxwap管理后台 - 登录</title>
+    <link href="../css/style.css" rel="stylesheet"/>
+    <link href="../css/buttons.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="../css/all.min.css">
+    <script src="../JS/jquery.min.js"></script>
+    <script src="../JS/common.js"></script>
+    <style>
+        /* 登录页面专属样式 */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #e0f7fa, #e8f0fe);
+            font-family: 'Arial', sans-serif;
+        }
+
+        .login-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            width: 360px;
+            text-align: center;
+        }
+
+        .login-container h1 {
+            margin-bottom: 30px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .login-container button:hover {
+            background-color: #0056b3;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <h1>Luxwap 管理后台</h1>
+    <div class="error-message" id="errorMsg"></div>
+    <input type="text" id="username" placeholder="用户名">
+    <input type="password" id="password" placeholder="密码">
+    <!-- 替换原有的验证码部分 -->
+    <div class="form-group" style="margin-bottom: 20px; width: 100%;">
+        <div style="display: flex; align-items: flex-start; gap: 10px;">
+            <input type="text" id="validateCode" name="validateCode" class="form-control code" placeholder="验证码" maxlength="5"
+                   style="flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; margin-bottom: 0;" />
+            <div style="flex-shrink: 0; margin-top: 0;">
+                <a href="javascript:void(0);" title="点击更换验证码" style="display: block;">
+                    <img class="imgcode" th:src="@{/captcha/captchaImage(type='math')}"
+                         style="height: 38px; border: 1px solid #ccc; border-radius: 4px; vertical-align: top;" />
+                </a>
+            </div>
+        </div>
+    </div>
+    <button id="loginBtn">登录</button>
+</div>
+
+<script th:inline="javascript"> var ctx = [[@{/}]];</script>
+
+<script>
+    const loginBtn = document.getElementById('loginBtn');
+    const errorMsg = document.getElementById('errorMsg');
+
+    $('.imgcode').click(function() {
+        var url = ctx + "captcha/captchaImage?type=math&s=" + Math.random();
+        $(".imgcode").attr("src", url);
+    });
+
+    async function login(){
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const validateCode = document.getElementById('validateCode').value.trim();
+
+        if (!username || !password) {
+            errorMsg.textContent = '用户名和密码不能为空';
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        if(!validateCode){
+            errorMsg.textContent = '验证码不饿能为空';
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        try {
+            const res = await fetch(ctx + 'login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body:`username=${username}&password=${password}&validateCode=${validateCode}&rememberMe=true`,
+                credentials: 'include' // 保证 cookie 被保存
+            });
+
+            const data = await res.json();
+
+            if(data.code !== 0){
+                $('.imgcode').click();
+                validateCode.value = '';
+                toast(data.msg || "登录失败, 请重试...", 'error');
+                return;
+            }
+
+            location.href = ctx + 'index';
+
+        } catch (err) {
+            errorMsg.textContent = '网络错误，请稍后重试';
+            errorMsg.style.display = 'block';
+        }
+    }
+
+    loginBtn.addEventListener('click', async () => {
+        login();
+    });
+
+    const validateCode = document.getElementById('validateCode');
+    if (validateCode) {
+        validateCode.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+    }
+</script>
+</body>
+</html>

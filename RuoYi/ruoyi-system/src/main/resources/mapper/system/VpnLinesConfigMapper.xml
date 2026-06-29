@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.VpnLinesConfigMapper">
+    
+    <resultMap type="VpnLinesConfig" id="VpnLinesConfigResult">
+        <result property="id"    column="id"    />
+        <result property="vpnLineId"    column="vpn_line_id"    />
+        <result property="configJson"    column="config_json"    />
+        <result property="createdAt"    column="createdAt"    />
+        <result property="updatedAt"    column="updatedAt"    />
+    </resultMap>
+
+    <sql id="selectVpnLinesConfigVo">
+        select id, vpn_line_id, config_json, created_at, updated_at from vpn_lines_config
+    </sql>
+
+    <select id="selectVpnLinesConfigList" parameterType="VpnLinesConfig" resultMap="VpnLinesConfigResult">
+        <include refid="selectVpnLinesConfigVo"/>
+        <where>  
+            <if test="vpnLineId != null  and vpnLineId != ''"> and vpn_line_id = #{vpnLineId}</if>
+            <if test="configJson != null  and configJson != ''"> and config_json = #{configJson}</if>
+            <if test="createdAt != null "> and created_at = #{createdAt}</if>
+            <if test="updatedAt != null "> and updated_at = #{updatedAt}</if>
+        </where>
+    </select>
+    
+    <select id="selectVpnLinesConfigById" parameterType="String" resultMap="VpnLinesConfigResult">
+        <include refid="selectVpnLinesConfigVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertVpnLinesConfig" parameterType="VpnLinesConfig" useGeneratedKeys="true" keyProperty="id">
+        insert into vpn_lines_config
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="vpnLineId != null and vpnLineId != ''">vpn_line_id,</if>
+            <if test="configJson != null and configJson != ''">config_json,</if>
+            <if test="createdAt != null">created_at,</if>
+            <if test="updatedAt != null">updated_at,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="vpnLineId != null and vpnLineId != ''">#{vpnLineId},</if>
+            <if test="configJson != null and configJson != ''">#{configJson},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+            <if test="updatedAt != null">#{updatedAt},</if>
+         </trim>
+    </insert>
+
+    <update id="updateVpnLinesConfig" parameterType="VpnLinesConfig">
+        update vpn_lines_config
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="vpnLineId != null and vpnLineId != ''">vpn_line_id = #{vpnLineId},</if>
+            <if test="configJson != null and configJson != ''">config_json = #{configJson},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="updateVpnLinesConfigByVpnLineId" parameterType="VpnLinesConfig">
+        update vpn_lines_config
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="configJson != null and configJson != ''">config_json = #{configJson},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+        </trim>
+        where vpn_line_id = #{vpnLineId}
+    </update>
+
+    <delete id="deleteVpnLinesConfigById" parameterType="String">
+        delete from vpn_lines_config where id = #{id}
+    </delete>
+
+    <delete id="deleteVpnLinesConfigByIds" parameterType="String">
+        delete from vpn_lines_config where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

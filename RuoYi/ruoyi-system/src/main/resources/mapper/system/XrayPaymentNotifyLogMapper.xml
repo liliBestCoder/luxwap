@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.XrayPaymentNotifyLogMapper">
+
+    <insert id="insertNotifyLog" parameterType="com.ruoyi.system.domain.XrayPaymentNotifyLog" useGeneratedKeys="true" keyProperty="id">
+        insert into xray_payment_notify_log (
+            order_no, trade_no, notify_id, channel, trade_status, amount, currency,
+            raw_payload, sign_verified, handled, fail_reason, created_at, updated_at
+        ) values (
+            #{orderNo}, #{tradeNo}, #{notifyId}, #{channel}, #{tradeStatus}, #{amount}, #{currency},
+            #{rawPayload}, #{signVerified}, #{handled}, #{failReason}, NOW(), NOW()
+        )
+    </insert>
+
+    <update id="markHandled">
+        update xray_payment_notify_log
+        set handled = 1, updated_at = NOW()
+        where id = #{id}
+    </update>
+
+    <update id="markFailed">
+        update xray_payment_notify_log
+        set handled = 0, fail_reason = #{failReason}, updated_at = NOW()
+        where id = #{id}
+    </update>
+
+</mapper>

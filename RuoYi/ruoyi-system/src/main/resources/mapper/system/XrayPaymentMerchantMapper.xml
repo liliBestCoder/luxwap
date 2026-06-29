@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.system.mapper.XrayPaymentMerchantMapper">
+
+    <!-- ResultMap 映射 -->
+    <resultMap id="BaseResultMap" type="com.ruoyi.system.domain.XrayPaymentMerchant">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="type" property="type"/>
+        <result column="config" property="config"/>
+        <result column="status" property="status"/>
+        <result column="remark" property="remark"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <!-- 查询所有 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT id, name, type, config, status, remark, created_at, updated_at
+        FROM xray_payment_merchant
+        ORDER BY id ASC
+    </select>
+
+    <select id="selectEnabled" resultMap="BaseResultMap">
+        SELECT id, name, type, config, status, remark, created_at, updated_at
+        FROM xray_payment_merchant
+        WHERE status = 1
+        ORDER BY id ASC
+    </select>
+
+    <!-- 按ID查询 -->
+    <select id="selectById" parameterType="long" resultMap="BaseResultMap">
+        SELECT id, name, type, config, status, remark, created_at, updated_at
+        FROM xray_payment_merchant
+        WHERE id = #{id}
+    </select>
+
+    <!-- 按支付类型查询 -->
+    <select id="selectByType" parameterType="string" resultMap="BaseResultMap">
+        SELECT id, name, type, config, status, remark, created_at, updated_at
+        FROM xray_payment_merchant
+        WHERE type = #{type}
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert" parameterType="com.ruoyi.system.domain.XrayPaymentMerchant" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO xray_payment_merchant (name, type, config, status, remark, created_at, updated_at)
+        VALUES (#{name}, #{type}, #{config}, #{status}, #{remark}, NOW(), NOW())
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.ruoyi.system.domain.XrayPaymentMerchant">
+        UPDATE xray_payment_merchant
+        SET
+        name = #{name},
+        type = #{type},
+        config = #{config},
+        status = #{status},
+        remark = #{remark},
+        updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+</mapper>

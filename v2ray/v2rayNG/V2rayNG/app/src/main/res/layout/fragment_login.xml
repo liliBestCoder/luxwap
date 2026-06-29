@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:paddingHorizontal="24dp">
+
+    <!-- 邮箱 -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilEmail"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="登录邮箱"
+        android:textColorHint="#000000"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxStrokeColor="#E0E0E0"
+        app:boxStrokeWidth="0dp"
+        app:startIconDrawable="@drawable/ic_login_user"
+        app:startIconTint="@null"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:boxBackgroundColor="#F3F6FB"
+        android:layout_marginTop="10dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:inputType="textEmailAddress"
+            android:paddingHorizontal="16dp"
+            
+            />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 密码 -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilPwd"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="密码"
+        android:textColorHint="#000000"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxStrokeColor="#E0E0E0"
+        app:boxStrokeWidth="0dp"
+        app:passwordToggleEnabled="true"
+        app:layout_constraintTop_toBottomOf="@id/tilEmail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        app:startIconDrawable="@drawable/ic_login_password"
+        app:startIconTint="@null"
+        app:boxBackgroundColor="#F3F6FB" >
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPwd"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:inputType="textPassword"
+            android:paddingHorizontal="0dp"
+            android:paddingLeft="0dp"
+            />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 忘记密码 -->
+    <TextView
+        android:id="@+id/tvForgot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="忘记密码？"
+        android:textColor="#2196F3"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tilPwd"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- 登录按钮 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLogin"
+        android:layout_width="0dp"
+        android:layout_height="65dp"
+        android:text="登录"
+        android:textAllCaps="false"
+        android:textSize="16sp"
+        app:cornerRadius="12dp"
+        app:backgroundTint="#2196F3"
+        app:layout_constraintTop_toBottomOf="@id/tvForgot"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp" />
+
+    <!-- 免费试用 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/tvTrial"
+        android:layout_width="0dp"
+        android:layout_height="65dp"
+        android:text="免费试用"
+        android:textAllCaps="false"
+        android:textSize="16sp"
+        android:textColor="#2196F3"
+        app:cornerRadius="12dp"
+        app:backgroundTint="#E9F0FF"
+        app:layout_constraintTop_toBottomOf="@id/btnLogin"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- 其他账号授权登录 -->
+    <TextView
+        android:id="@+id/tvOther"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="其他账号授权登录"
+        android:textColor="#666666"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toTopOf="@id/llSocial"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="8dp" />
+
+    <!-- 三方图标行 -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/llSocial"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/tvTrial"
+        app:layout_constraintEnd_toEndOf="@+id/tvTrial"
+        android:layout_marginBottom="30dp">
+
+        <!-- X 居左 -->
+        <ImageView
+            android:id="@+id/ivX"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_x"
+            android:background="?selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:padding="6dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginStart="10dp"/>
+
+        <!-- Google 居中 -->
+        <ImageView
+            android:id="@+id/ivGoogle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_google"
+            android:background="?selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:padding="6dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- FB 居右 -->
+        <ImageView
+            android:id="@+id/ivFacebook"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_facebook"
+            android:background="?selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:padding="6dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="10dp" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

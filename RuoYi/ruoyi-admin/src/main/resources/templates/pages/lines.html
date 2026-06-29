@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>线路信息 - Luxwap管理后台</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/buttons.css">
+    <link rel="stylesheet" href="../css/all.min.css">
+    <link rel="stylesheet" href="../css/simplePagination.css">
+    <script src="../JS/jquery.min.js"></script>
+    <script src="../JS/jquery.simplePagination.min.js"></script>
+
+</head>
+<body>
+    <div class="page-header">
+        <h1 class="page-title">线路信息</h1>
+        <p class="page-subtitle">管理和监控所有线路状态</p>
+    </div>
+
+    <!-- 🔴线路概览卡片 -->
+	<div class="overview-grid" id="linesView">
+    <div class="card is-accent" id="card-total-lines">
+        <div class="overview-row">
+            <div>
+                <h3 class="overview-label">总线路数</h3>
+                <p class="overview-metric">156</p>
+            </div>
+            <div class="overview-icon">
+                <i class="fas fa-route"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="card is-success" id="card-online-lines">
+        <div class="overview-row">
+            <div>
+                <h3 class="overview-label">在线线路</h3>
+                <p class="overview-metric">142</p>
+            </div>
+            <div class="overview-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="card is-warning" id="card-maintenance-lines">
+        <div class="overview-row">
+            <div>
+                <h3 class="overview-label">维护中</h3>
+                <p class="overview-metric">8</p>
+            </div>
+            <div class="overview-icon">
+                <i class="fas fa-wrench"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="card is-danger" id="card-fault-lines">
+        <div class="overview-row">
+            <div>
+                <h3 class="overview-label">故障线路</h3>
+                <p class="overview-metric">6</p>
+            </div>
+            <div class="overview-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- 🔴筛选和搜索 -->
+    <div class="card" id="linesSelect">
+        <div class="card-header">
+            <h3 class="card-title">线路筛选</h3>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+                <label class="form-label">线路名称</label>
+                <input type="text" class="form-control" placeholder="输入线路名称..." id="lineName">
+            </div>
+            <div>
+                <label class="form-label">状态筛选</label>
+                <select class="form-control" id="lineStatus">
+                    <option value="">全部状态</option>
+                    <option value="online">在线</option>
+                    <option value="maintenance">维护中</option>
+                    <option value="offline">离线</option>
+                    <option value="error">故障</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">线路类型</label>
+                <select class="form-control" id="lineType">
+                    <option value="">全部类型</option>
+                    <option value="fiber">光纤</option>
+                    <option value="cable">电缆</option>
+                    <option value="wireless">无线</option>
+                    <option value="satellite">卫星</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">地区</label>
+                <select class="form-control" id="lineRegion">
+                    <option value="">全部地区</option>
+                    <option value="asia">亚洲</option>
+                    <option value="europe">欧洲</option>
+                    <option value="north_america">北美洲</option>
+                    <option value="south_america">南美洲</option>
+                </select>
+            </div>
+            <div style="display: flex; align-items: end; gap: 10px;">
+                <button class="btn btn-primary" onclick="searchLines()">
+                    <i class="fas fa-search"></i> 搜索
+                </button>
+                <button class="btn btn-secondary" onclick="clearLineFilter()">
+                    <i class="fas fa-refresh"></i> 重置
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔴线路列表 -->
+    <div class="card" id="linesList">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 class="card-title">线路列表</h3>
+	</div>
+        
+        <div style="overflow-x: auto;">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>线路ID</th>
+                <th class="sortable" onclick="sortTable(1)">地区 <i class="fas fa-sort"></i></th>
+                <th>线路名称</th>
+                <th>类型</th>
+                <th>带宽</th>
+                <th>总流量(G/月)</th>
+                <th>剩余流量(G/月)</th>
+                <th>延迟</th>
+                <th>状态</th>
+              </tr>
+            </thead>
+            <tbody id="linesTableBody">
+          <!-- 动态渲染 -->
+            </tbody>
+		  	</table>
+		</div>
+
+        <!-- 🔴分页 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+            <div id="pagination-info-lines" style="color: var(--text-secondary); font-size: 13px;">
+                显示 1-4 条，共 4 条记录
+            </div>
+            <div id="pagination-container-lines"></div>
+        </div>
+    </div>
+	
+     <!-- 页面脚本 -->
+    <script src="../JS/lines.js" id="scriptLines" defer></script>
+    <script src="../JS/search.js" id="scriptSearch" defer></script>
+    <script src="../JS/common.js" id="scriptCommon" defer></script>
+
+    <script src="../JS/traffic-progress.js" defer></script>
+
+    <!-- 新增：添加线路模态框 -->
+    <div id="lineModal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="lineModalTitle">添加线路</h3>
+          <span class="modal-close" onclick="closeLineModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+          <form id="lineForm">
+            <!-- 代码块作用注释：基础信息 -->
+            <div class="form-group">
+              <label class="form-label" for="lineId">线路ID</label>
+              <input type="text" class="form-control" id="lineId" required placeholder="例如：L1001">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lineNameInput">线路名称</label>
+              <input type="text" class="form-control" id="lineNameInput" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lineRegionInput">地区</label>
+              <input type="text" class="form-control" id="lineRegionInput" placeholder="例如：亚洲/欧洲/北美洲">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lineTypeInput">类型</label>
+              <input type="text" class="form-control" id="lineTypeInput" placeholder="例如：中国优选/视频专线">
+            </div>
+            <!-- 代码块作用注释：网络信息 -->
+            <div class="form-group">
+              <label class="form-label" for="lineIp">IP</label>
+              <input type="text" class="form-control" id="lineIp" placeholder="例如：1.2.3.4">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lineBandwidth">带宽</label>
+              <input type="text" class="form-control" id="lineBandwidth" placeholder="例如：10Gbps">
+            </div>
+            <!-- 代码块作用注释：配额与状态 -->
+            <div class="form-group">
+              <label class="form-label" for="lineTotal">总流量(G/月)</label>
+              <input type="number" class="form-control" id="lineTotal" min="0" step="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lineRemain">剩余流量(G/月)</label>
+              <input type="number" class="form-control" id="lineRemain" min="0" step="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lineLatency">延迟(ms)</label>
+              <input type="text" class="form-control" id="lineLatency" placeholder="例如：15ms 或数字">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lineOffset">偏移</label>
+              <input type="text" class="form-control" id="lineOffset" placeholder="可留空">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lineStatus">状态</label>
+              <select class="form-control" id="lineStatus">
+                <option value="online">在线</option>
+                <option value="maintenance">维护中</option>
+                <option value="offline">离线</option>
+                <option value="error">故障</option>
+              </select>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+              <button type="button" class="btn btn-secondary" onclick="closeLineModal()">取消</button>
+              <button type="submit" class="btn btn-primary">保存</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:paddingHorizontal="24dp">
+
+    <!-- 注册邮箱* -->
+    <TextView
+        android:id="@+id/tvLabelEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="注册邮箱"
+        android:textColor="#000000"
+        android:textSize="12sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="10dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="*"
+        android:textColor="#D32F2F"
+        android:textSize="12sp"
+        app:layout_constraintTop_toTopOf="@+id/tvLabelEmail"
+        app:layout_constraintStart_toEndOf="@+id/tvLabelEmail"
+        app:layout_constraintBottom_toBottomOf="@+id/tvLabelEmail"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilEmail"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="输入邮箱"
+        android:textColorHint="#BBBCBD"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxBackgroundColor="#F3F6FB"
+        app:boxStrokeColor="@android:color/transparent"
+        app:boxStrokeWidth="0dp"
+        app:layout_constraintTop_toBottomOf="@id/tvLabelEmail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="4dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:inputType="textEmailAddress"
+            android:paddingHorizontal="16dp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 输入密码* -->
+    <TextView
+        android:id="@+id/tvLabelPwd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="输入密码"
+        android:textColor="#000000"
+        android:textSize="12sp"
+        app:layout_constraintTop_toBottomOf="@id/tilEmail"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="*"
+        android:textColor="#D32F2F"
+        android:textSize="12sp"
+        app:layout_constraintTop_toTopOf="@+id/tvLabelPwd"
+        app:layout_constraintStart_toEndOf="@+id/tvLabelPwd"
+        app:layout_constraintBottom_toBottomOf="@+id/tvLabelPwd"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilPwd"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="输入注册密码"
+        android:textColorHint="#BBBCBD"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxBackgroundColor="#F3F6FB"
+        app:boxStrokeColor="@android:color/transparent"
+        app:boxStrokeWidth="0dp"
+        app:passwordToggleEnabled="true"
+        app:layout_constraintTop_toBottomOf="@id/tvLabelPwd"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="4dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPwd"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:inputType="textPassword"
+            android:paddingHorizontal="16dp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 确认密码* -->
+    <TextView
+        android:id="@+id/tvLabelPwd2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="确认密码"
+        android:textColor="#000000"
+        android:textSize="12sp"
+        app:layout_constraintTop_toBottomOf="@id/tilPwd"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="*"
+        android:textColor="#D32F2F"
+        android:textSize="12sp"
+        app:layout_constraintTop_toTopOf="@+id/tvLabelPwd2"
+        app:layout_constraintStart_toEndOf="@+id/tvLabelPwd2"
+        app:layout_constraintBottom_toBottomOf="@+id/tvLabelPwd2"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilPwd2"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="确认注册密码"
+        android:textColorHint="#BBBCBD"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxBackgroundColor="#F3F6FB"
+        app:boxStrokeColor="@android:color/transparent"
+        app:boxStrokeWidth="0dp"
+        app:passwordToggleEnabled="true"
+        app:layout_constraintTop_toBottomOf="@id/tvLabelPwd2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="4dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPwd2"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:inputType="textPassword"
+            android:paddingHorizontal="16dp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 验证邮箱按钮 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnVerify"
+        android:layout_width="0dp"
+        android:layout_height="65dp"
+        android:text="验证邮箱"
+        android:textAllCaps="false"
+        android:textSize="16sp"
+        app:cornerRadius="12dp"
+        app:backgroundTint="#2196F3"
+        app:layout_constraintTop_toBottomOf="@id/tilPwd2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp" />
+
+    <!-- 协议文案 -->
+    <TextView
+        android:id="@+id/tvAgreement"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="注册即视为您已阅读并同意《用户协议》及《隐私政策》。我们将依法保护您的数据安全。"
+        android:textColor="#BBBCBD"
+        android:textSize="12sp"
+        android:lineSpacingExtra="2dp"
+        app:layout_constraintTop_toBottomOf="@id/btnVerify"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp" />
+
+    <!-- 已有账户？请登录 -->
+    <TextView
+        android:id="@+id/tvGoLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="已有账户？请登录"
+        android:textColor="#2196F3"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tvAgreement"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
