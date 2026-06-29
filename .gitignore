@@ -114,6 +114,7 @@ xray_partner_full.sql
 # ============================================================
 # Temporary / tool directories
 # ============================================================
+backup/
 .reasonix/
 tmp-admin-jar-check/
 unlocker428/
