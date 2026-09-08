@@ -165,6 +165,16 @@ async function apiRequest(path, { method = 'GET', body, headers = {} } = {}) {
   return isJson ? res.json() : res.text();
 }
 
+/**
+ * 获取全局每页显示记录数
+ * @returns {number}
+ */
+function getGlobalPageSize() {
+  const size = localStorage.getItem('page_size');
+  const parsed = parseInt(size, 10);
+  return (!isNaN(parsed) && parsed > 0) ? parsed : 20;
+}
+
 // 暴露到全局（如已存在不会覆盖）
 window.toast = window.toast || toast;
 window.exportData = exportData;
@@ -177,3 +187,4 @@ window.paginate = paginate;
 window.toggleModal = toggleModal;
 // 新增导出
 window.apiRequest = window.apiRequest || apiRequest;
+window.getGlobalPageSize = getGlobalPageSize;

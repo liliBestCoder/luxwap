@@ -247,47 +247,31 @@ function updatePageSize(size) {
 }
 
 function saveDisplaySettings() {
-    const pageSize = document.getElementById('page-size-setting').value;
-    localStorage.setItem('page_size', pageSize);
-    toast('显示设置已保存', 'success');
+    const el = document.getElementById('page-size-setting');
+    if (el) {
+        localStorage.setItem('page_size', el.value);
+        toast('显示设置已保存', 'success');
+    }
 }
 
 function resetDisplaySettings() {
-    document.getElementById('page-size-setting').value = '20';
+    const el = document.getElementById('page-size-setting');
+    if (el) {
+        el.value = '20';
+    }
     localStorage.setItem('page_size', '20');
     toast('显示设置已重置为默认值', 'info');
 }
 
 // 初始化常规设置
-// function initGeneralSettings() {
-//     // 恢复保存的用户信息
-//     const savedUsername = localStorage.getItem('current_username');
-//     const savedEmail = localStorage.getItem('current_email');
-//     const savedPageSize = localStorage.getItem('page_size') || '20';
-//     const totpEnabled = localStorage.getItem('totp_enabled');
-//
-//     if (savedUsername) {
-//         document.getElementById('current-username').value = savedUsername;
-//     }
-//     if (savedEmail) {
-//         document.getElementById('current-email').value = savedEmail;
-//     }
-//
-//     // 恢复页面大小设置
-//     document.getElementById('page-size-setting').value = savedPageSize;
-//
-//     // 恢复TOTP状态
-//     if (totpEnabled === 'true') {
-//         document.getElementById('totp-status-text').textContent = '已启用';
-//         document.getElementById('totp-status-text').style.color = 'var(--success-color)';
-//         document.getElementById('totp-toggle-btn').innerHTML = '<i class="fas fa-times"></i> 禁用2FA';
-//     }
-// }
+function initGeneralSettings() {
+    const savedPageSize = localStorage.getItem('page_size') || '20';
+    const pageSizeEl = document.getElementById('page-size-setting');
+    if (pageSizeEl) {
+        pageSizeEl.value = savedPageSize;
+    }
+}
 
-// // 更新页面初始化函数
-// (function init() {
-//     // 原有的初始化逻辑
-//
-//     // 新增：初始化常规设置
-//     setTimeout(initGeneralSettings, 100);
-// })();
+document.addEventListener('DOMContentLoaded', () => {
+    initGeneralSettings();
+});

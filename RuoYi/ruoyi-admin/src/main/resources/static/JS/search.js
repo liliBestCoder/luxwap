@@ -37,8 +37,7 @@ const DISTRIBUTOR_REGION = {
     JP: "日本",
 };
 
-const pageSize = localStorage.getItem('page_size');
-
+const getPageSizeConfig = () => (typeof getGlobalPageSize === 'function' ? getGlobalPageSize() : 20);
 
 async function searchLines() {
     const name = (document.getElementById('lineName')?.value || '').toLowerCase();
@@ -110,11 +109,11 @@ async function searchLines() {
           <option class="spanred" value="error"  ${l.status == 'error' ? 'selected' : ''}>故障</option>
         </select>
       </td>
-      <td><button class="btn btn-secondary" style="padding: 5px 10px; margin-right: 5px;" onclick="viewLine('L001')"> <i class="fas fa-eye"></i> </button>
+      <td><button class="btn btn-secondary" style="padding: 5px 10px; margin-right: 5px;" onclick="viewLine('${l.id}')"> <i class="fas fa-eye"></i> </button>
       </td>
       <td>
         <button class="btn btn-primary" style="padding: 5px 10px; margin-right: 5px;" onclick="editLine(this, '${l.id}')"> <i class="fas fa-check"></i> </button>
-        <button class="btn btn-secondary" style="padding: 5px 10px; background: rgba(255, 71, 87, 0.2); color: var(--danger-color);" onclick="deleteLine('L001')"> <i class="fas fa-trash"></i> </button>
+        <button class="btn btn-secondary" style="padding: 5px 10px; background: rgba(255, 71, 87, 0.2); color: var(--danger-color);" onclick="deleteLine(this, '${l.id}')"> <i class="fas fa-trash"></i> </button>
       </td></tr>`;
         }
        return row;}).join('');
@@ -370,7 +369,7 @@ const tableList = $(".main-tab-content");
 if(tableList.length <= 0){
     const paging = window[`${menu}-paging`] = {
         totalItems: 0,
-        pageSize: pageSize || 2,
+        pageSize: getPageSizeConfig(),
         pageNumber: 1
     };
 
@@ -396,7 +395,7 @@ if(tableList.length <= 0){
 }else{
     const innerPaging = window[`inner-users-paging`] = {
         totalItems: 0,
-        pageSize: pageSize || 2,
+        pageSize: getPageSizeConfig(),
         pageNumber: 1
     }
     $("#pagination-container-inner-users").pagination({
@@ -421,7 +420,7 @@ if(tableList.length <= 0){
         menus.forEach(menuTab => {
             const paging = window[`${menuTab}-paging`] = {
                 totalItems: 0,
-                pageSize: pageSize || 2,
+                pageSize: getPageSizeConfig(),
                 pageNumber: 1,
                 menu:  menuTab,
             };

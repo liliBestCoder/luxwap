@@ -12,7 +12,7 @@
   menusTab.forEach(menuTab => {
     const paging = window[`${menuTab}-paging`] = {
                 totalItems: 0,
-                pageSize: 2,
+                pageSize: typeof getGlobalPageSize === 'function' ? getGlobalPageSize() : 20,
                 pageNumber: 1,
     };
     $(`#pagination-container-${menuTab}`).pagination({
