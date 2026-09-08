@@ -69,4 +69,6 @@ public interface IVpnLinesService
     public void pingStats();
 
     public List<String> generateVlessLinkList();
+
+    public List<String> generateVlessLinkList(String userUuid);
 }

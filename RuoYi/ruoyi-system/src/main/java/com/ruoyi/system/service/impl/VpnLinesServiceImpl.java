@@ -190,7 +190,13 @@ public class VpnLinesServiceImpl implements IVpnLinesService, InitializingBean, 
         return "success";
     }
 
+    @Override
     public List<String> generateVlessLinkList() {
+        return generateVlessLinkList(null);
+    }
+
+    @Override
+    public List<String> generateVlessLinkList(String userUuid) {
         List<String> vlessLinkList = new ArrayList<>();
 
         // 查询所有线路
@@ -204,6 +210,8 @@ public class VpnLinesServiceImpl implements IVpnLinesService, InitializingBean, 
         List<VpnLinesConfig> vpnLinesConfigList = vpnLineConfigMapper.selectVpnLinesConfigList(new VpnLinesConfig());
 
         Map<Long, VpnLinesConfig> vpnLinesConfigMappings = vpnLinesConfigList.stream().collect(Collectors.toMap(VpnLinesConfig::getVpnLineId, Function.identity()));
+
+        String targetUuid = StringUtils.isNotBlank(userUuid) ? userUuid : "${uuid}";
 
         for (VpnLines vpnLine : vpnLinesList) {
             try {
@@ -219,7 +227,7 @@ public class VpnLinesServiceImpl implements IVpnLinesService, InitializingBean, 
 
                 // 如果存储的是 vless:// 链接，直接替换 UUID 占位符并格式化备注
                 if (trimmedConfig.startsWith("vless://")) {
-                    String linkWithPlaceholder = trimmedConfig.replaceFirst("^vless://[^@]+@", "vless://" + java.util.regex.Matcher.quoteReplacement("${uuid}") + "@");
+                    String linkWithPlaceholder = trimmedConfig.replaceFirst("^vless://[^@]+@", "vless://" + java.util.regex.Matcher.quoteReplacement(targetUuid) + "@");
                     int hashIdx = linkWithPlaceholder.indexOf('#');
                     String baseLink = (hashIdx != -1) ? linkWithPlaceholder.substring(0, hashIdx) : linkWithPlaceholder;
                     String keyword = StringUtils.isEmpty(vpnLine.getKeyword()) ? "" : vpnLine.getKeyword();
@@ -264,7 +272,7 @@ public class VpnLinesServiceImpl implements IVpnLinesService, InitializingBean, 
                 String keyword = vpnLine.getKeyword();
 
                 // 构建基础URL部分
-                String userInfo = "${uuid}";
+                String userInfo = targetUuid;
                 String hostInfo = vpnLine.getIp() + ":" + vpnLine.getPort();
 
                 // 构建查询参数
