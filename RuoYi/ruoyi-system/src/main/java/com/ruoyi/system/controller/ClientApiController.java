@@ -817,15 +817,7 @@ public class ClientApiController extends BaseController {
     @ResponseBody
     public AjaxResult lineList() {
         try {
-            Long userId = XrayThreadLocal.getUid();
-            String userUuid = null;
-            if (userId != null) {
-                XrayUser user = xrayUserService.selectXrayUserById(userId);
-                if (user != null) {
-                    userUuid = user.getUuid();
-                }
-            }
-            return AjaxResult.success(vpnLinesService.generateVlessLinkList(userUuid));
+            return AjaxResult.success(vpnLinesService.generateVlessLinkList("${uuid}"));
         } catch (RuntimeException e) {
             return AjaxResult.error(e.getMessage());
         }
