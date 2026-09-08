@@ -231,7 +231,8 @@ public class VpnLinesServiceImpl implements IVpnLinesService, InitializingBean, 
                     int hashIdx = linkWithPlaceholder.indexOf('#');
                     String baseLink = (hashIdx != -1) ? linkWithPlaceholder.substring(0, hashIdx) : linkWithPlaceholder;
                     String keyword = StringUtils.isEmpty(vpnLine.getKeyword()) ? "" : vpnLine.getKeyword();
-                    String formattedLink = baseLink + "#" + vpnLine.getName() + "@split@" + keyword + "@split@" + vpnLine.getRegion();
+                    String encodedName = encodeRemarkName(vpnLine.getName());
+                    String formattedLink = baseLink + "#" + encodedName + "@split@" + keyword + "@split@" + vpnLine.getRegion();
                     vlessLinkList.add(formattedLink);
                     continue;
                 }
@@ -330,7 +331,7 @@ public class VpnLinesServiceImpl implements IVpnLinesService, InitializingBean, 
                 queryParams.append("&headerType=none");
 
                 // 构建完整vless链接
-                String vlessLink = "vless://" + userInfo + "@" + hostInfo + "?" + queryParams.toString() + "#" + vpnLine.getName()
+                String vlessLink = "vless://" + userInfo + "@" + hostInfo + "?" + queryParams.toString() + "#" + encodeRemarkName(vpnLine.getName())
                         + "@split@" + keyword + "@split@" + vpnLine.getRegion();
                 vlessLinkList.add(vlessLink);
 
@@ -340,6 +341,18 @@ public class VpnLinesServiceImpl implements IVpnLinesService, InitializingBean, 
         }
 
         return vlessLinkList;
+    }
+
+    private String encodeRemarkName(String name) {
+        if (StringUtils.isBlank(name)) {
+            return "";
+        }
+        try {
+            String decoded = java.net.URLDecoder.decode(name, "UTF-8");
+            return java.net.URLEncoder.encode(decoded, "UTF-8").replace("+", "%20");
+        } catch (Exception e) {
+            return name;
+        }
     }
 
     public static String generatePublicKey(String privateKeyBase64) {
