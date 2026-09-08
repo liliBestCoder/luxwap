@@ -471,7 +471,7 @@
                   </div>
                   <div class="file-upload-area" onclick="document.getElementById('csvFileInput').click()" ondrop="handleFileDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"> <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 10px;"></i>
                     <p>点击或拖拽CSV文件到此处上传并预览</p>
-                    <p style="color: var(--text-secondary); font-size: 12px;">支持的格式: CSV (地区、线路名称、线路类型、IP、带宽、总流量、满载连接数、Ping偏移、端口、筛选词、配置)</p>
+                    <p style="color: var(--text-secondary); font-size: 12px;">支持的格式: CSV (地区、线路名称、线路类型、IP、带宽、总流量、满载连接数、Ping偏移、端口、筛选词、VLESS链接)</p>
                   </div>
                   <label for="csvFileInput" class="sr-only">上传CSV</label>
                   <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleFileSelect(event)">
@@ -490,7 +490,7 @@
                           <th>Ping偏移</th>
                           <th>端口</th>
                           <th>筛选词</th>
-                          <th>配置</th>
+                          <th>VLESS链接</th>
                         </tr>
                       </thead>
                       <tbody id="csvTableBody2">

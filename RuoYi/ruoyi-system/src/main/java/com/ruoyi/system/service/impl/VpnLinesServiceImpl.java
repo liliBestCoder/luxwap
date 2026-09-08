@@ -207,14 +207,29 @@ public class VpnLinesServiceImpl implements IVpnLinesService, InitializingBean, 
 
         for (VpnLines vpnLine : vpnLinesList) {
             try {
-                // 获取线路配置
                 VpnLinesConfig config = vpnLinesConfigMappings.get(vpnLine.getId());
                 if (config == null) {
                     continue;
                 }
+                String rawConfig = config.getConfigJson();
+                if (StringUtils.isBlank(rawConfig)) {
+                    continue;
+                }
+                String trimmedConfig = rawConfig.trim();
 
-                // 解析配置JSON
-                JSONObject configJson = JSON.parseObject(config.getConfigJson());
+                // 如果存储的是 vless:// 链接，直接替换 UUID 占位符并格式化备注
+                if (trimmedConfig.startsWith("vless://")) {
+                    String linkWithPlaceholder = trimmedConfig.replaceFirst("^vless://[^@]+@", "vless://" + java.util.regex.Matcher.quoteReplacement("${uuid}") + "@");
+                    int hashIdx = linkWithPlaceholder.indexOf('#');
+                    String baseLink = (hashIdx != -1) ? linkWithPlaceholder.substring(0, hashIdx) : linkWithPlaceholder;
+                    String keyword = StringUtils.isEmpty(vpnLine.getKeyword()) ? "" : vpnLine.getKeyword();
+                    String formattedLink = baseLink + "#" + vpnLine.getName() + "@split@" + keyword + "@split@" + vpnLine.getRegion();
+                    vlessLinkList.add(formattedLink);
+                    continue;
+                }
+
+                // 旧版兼容：解析配置JSON
+                JSONObject configJson = JSON.parseObject(trimmedConfig);
 
                 // 提取inbounds信息
                 JSONArray inbounds = configJson.getJSONArray("inbounds");
