@@ -494,9 +494,15 @@ async function importLines() {
 }
 
 async function editLine(obj, id){
-  const $this = $(obj);
-  const pingOffset = $this.parent().prev().prev().prev().find("input").val();
-  const status = $this.parent().prev().prev().find("select").val();
+  const $tr = $(obj).closest("tr");
+  const pingOffset = $tr.find("input").val() || "";
+  const status = $tr.find("select").val() || "";
+
+  if (!id) {
+    toast("线路ID无效", "error");
+    return;
+  }
+
   // 向后端接口发送 POST 请求
   await fetch("/system/lines/edit", {
     method: "POST",
@@ -504,17 +510,20 @@ async function editLine(obj, id){
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     credentials: 'include',
-    body: `id=${id}&pingOffset=${pingOffset}&status=${status}`,
+    body: `id=${encodeURIComponent(id)}&pingOffset=${encodeURIComponent(pingOffset)}&status=${encodeURIComponent(status)}`,
   }).then((response) => response.json())
       .then((data) => {
-        if (data.code === 0) {
+        if (data.code === 0 || data.code === 200) {
           toast(`更新线路成功`, "success");
-          searchLines();
+          if (typeof searchLines === 'function') {
+            searchLines();
+          }
         } else {
-          toast("更新线路失败，请稍后再试", "error");
+          toast("更新线路失败：" + (data.msg || "请稍后再试"), "error");
         }
       })
       .catch((error) => {
+        console.error(error);
         toast("网络错误，请重试", "error");
       });
 }
