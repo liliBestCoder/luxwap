@@ -85,4 +85,13 @@ public class VpnLinesController extends BaseController
     {
         return toAjax(vpnLinesService.updateVpnLines(vpnLines));
     }
+
+    @RequiresPermissions("system:lines:remove")
+    @Log(title = "VPN线路信息", businessType = BusinessType.DELETE)
+    @PostMapping("/remove")
+    @ResponseBody
+    public AjaxResult remove(String ids)
+    {
+        return toAjax(vpnLinesService.deleteVpnLinesByIds(ids));
+    }
 }
