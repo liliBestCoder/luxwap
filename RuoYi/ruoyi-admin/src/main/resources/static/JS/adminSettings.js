@@ -426,12 +426,63 @@ function closeUserModal() {
   if (modal) modal.style.display = 'none';
 }
 
+let selectedCsvFile = null;
+
+function handleFileSelect(event) {
+  const file = event.target.files && event.target.files[0];
+  if (file) {
+    selectedCsvFile = file;
+    parseCSV(file);
+  }
+}
+
+function handleFileDrop(event) {
+  event.preventDefault();
+  const fileArea = event.currentTarget;
+  if (fileArea) fileArea.classList.remove("drag-over");
+
+  if (event.dataTransfer && event.dataTransfer.files.length > 0) {
+    const file = event.dataTransfer.files[0];
+    selectedCsvFile = file;
+    const fileInput = document.querySelector("#csvFileInput");
+    if (fileInput) {
+      fileInput.files = event.dataTransfer.files;
+    }
+    parseCSV(file);
+  }
+}
+
+function handleDragOver(event) {
+  event.preventDefault();
+  const fileArea = event.currentTarget;
+  if (fileArea) fileArea.classList.add("drag-over");
+}
+
+function handleDragLeave(event) {
+  event.preventDefault();
+  const fileArea = event.currentTarget;
+  if (fileArea) fileArea.classList.remove("drag-over");
+}
+
+function clearCsvFilter() {
+  selectedCsvFile = null;
+  const fileInput = document.querySelector("#csvFileInput");
+  if (fileInput) fileInput.value = "";
+  const csvTableBody2 = document.getElementById("csvTableBody2");
+  if (csvTableBody2) csvTableBody2.innerHTML = "";
+  const csvPreview2 = document.getElementById("csvPreview2");
+  if (csvPreview2) csvPreview2.style.display = "none";
+}
+
 function parseCSV(file) {
   const reader = new FileReader();
   reader.onload = function (event) {
     const text = event.target.result;
     const rows = text.split(/\r?\n/).filter((r) => r.trim().length > 0);
-    // 期望列: 地区,线路名称,IP,Ping偏移
+    const csvTableBody2 = document.getElementById("csvTableBody2");
+    const csvPreview2 = document.getElementById("csvPreview2");
+    if (!csvTableBody2) return;
+
     csvTableBody2.innerHTML = "";
     let validCount = 0;
     rows.forEach((row) => {
@@ -446,7 +497,9 @@ function parseCSV(file) {
       csvTableBody2.appendChild(tr);
       validCount++;
     });
-    csvPreview2.style.display = validCount > 0 ? "block" : "none";
+    if (csvPreview2) {
+      csvPreview2.style.display = validCount > 0 ? "block" : "none";
+    }
     toast(`解析完成，共 ${validCount} 条`, validCount > 0 ? "success" : "warning");
   };
   reader.onerror = function () {
@@ -456,15 +509,16 @@ function parseCSV(file) {
 }
 
 async function importLines() {
+  const csvTableBody2 = document.getElementById("csvTableBody2");
   const rows = csvTableBody2?.querySelectorAll("tr").length || 0;
   if (rows === 0) {
     toast("没有可导入的线路", "warning");
     return;
   }
 
-  // 获取上传的文件对象
-  const fileInput = document.querySelector("#csvFileInput");  // 假设你有一个文件上传的 input 元素
-  const file = fileInput.files[0];  // 获取第一个文件
+  // 获取上传的文件对象（优先使用全局暂存文件或 fileInput 里的文件）
+  const fileInput = document.querySelector("#csvFileInput");
+  const file = selectedCsvFile || (fileInput && fileInput.files && fileInput.files[0]);
 
   if (!file) {
     toast("请先选择文件", "warning");
@@ -481,17 +535,28 @@ async function importLines() {
     body: formData,
   }).then((response) => response.json())
     .then((data) => {
-      if (data.code === 0) {
-        toast(`已导入 ${rows} 条线路`, "success");
-        searchLines();
+      if (data.code === 0 || data.code === 200) {
+        toast(`已成功导入 ${rows} 条线路`, "success");
+        if (typeof searchLines === 'function') {
+          searchLines();
+        }
+        clearCsvFilter();
       } else {
-        toast("导入失败，请稍后再试", "error");
+        toast("导入失败：" + (data.msg || "请稍后再试"), "error");
       }
     })
     .catch((error) => {
+      console.error(error);
       toast("网络错误，请重试", "error");
     });
 }
+
+window.handleFileSelect = handleFileSelect;
+window.handleFileDrop = handleFileDrop;
+window.handleDragOver = handleDragOver;
+window.handleDragLeave = handleDragLeave;
+window.clearCsvFilter = clearCsvFilter;
+window.importLines = importLines;
 
 async function editLine(obj, id) {
   const $this = $(obj);
