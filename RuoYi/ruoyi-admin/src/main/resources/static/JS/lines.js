@@ -25,7 +25,7 @@ async function updateOverviewMetrics() {
   });
   const data = await response.json();
 
-  if(data.code !== 0){
+  if (data.code !== 0) {
     toast(data.msg, 'error');
     return;
   }
@@ -96,7 +96,7 @@ function addLine() {
 function initLineFormSubmit() {
   const form = document.getElementById('lineForm');
   if (!form) return;
-  form.addEventListener('submit', async function(e) {
+  form.addEventListener('submit', async function (e) {
     e.preventDefault();
     const payload = {
       id: document.getElementById('lineId')?.value?.trim(),
@@ -135,47 +135,14 @@ function viewLine(lineId) {
 function initLineModalOutsideClick() {
   const modal = document.getElementById('lineModal');
   if (!modal) return;
-  modal.addEventListener('click', function(e) {
+  modal.addEventListener('click', function (e) {
     if (e.target === this) {
       closeLineModal();
     }
   });
 }
 
-async function deleteLine(objOrId, id) {
-  const lineId = typeof objOrId === 'string' ? objOrId : id;
-  if (!lineId) return;
-
-  if (!confirm(`确定要删除线路 ${lineId} 吗？`)) {
-    return;
-  }
-
-  try {
-    const response = await fetch('/system/lines/remove', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      credentials: 'include',
-      body: `ids=${encodeURIComponent(lineId)}`,
-    });
-    const data = await response.json();
-    if (data.code === 0 || data.code === 200) {
-      toast('删除线路成功', 'success');
-      if (typeof searchLines === 'function') {
-        searchLines();
-      }
-    } else {
-      toast('删除失败：' + (data.msg || '请稍后再试'), 'error');
-    }
-  } catch (error) {
-    console.error(error);
-    toast('网络错误，请重试', 'error');
-  }
-}
-
 // 暴露到全局（便于 HTML onclick 调用）
 window.addLine = addLine;
 window.viewLine = viewLine;
-window.deleteLine = deleteLine;
 window.closeLineModal = closeLineModal;

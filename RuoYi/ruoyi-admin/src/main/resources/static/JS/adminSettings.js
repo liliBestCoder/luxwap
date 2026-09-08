@@ -21,113 +21,113 @@ function showMainTab(tab) {
 
   window.menu = tab;
 
-  if(tab === 'users'){
+  if (tab === 'users') {
     searchUsers();
-  }else if(tab === 'lines'){
+  } else if (tab === 'lines') {
     searchLines();
-  }else if(tab === 'dealer'){
+  } else if (tab === 'dealer') {
     searchDistributorsSettings();
     searchDistributors();
     searchDistributorsApply();
-  }else if(tab === 'activity'){
+  } else if (tab === 'activity') {
     searchActivitySettings();
-  }else if(tab === 'access'){
+  } else if (tab === 'access') {
     searchInnerUsers();
   }
 }
 
 // ---------------- 支付配置展开/保存 ----------------
 function configureGateway(name) {
-    const form = document.getElementById(`${name}-form`);
-    if (!form) return;
+  const form = document.getElementById(`${name}-form`);
+  if (!form) return;
 
-    // 如果表单已经显示，则直接隐藏
-    if (form.style.display === "block") {
-        form.style.display = "none";
+  // 如果表单已经显示，则直接隐藏
+  if (form.style.display === "block") {
+    form.style.display = "none";
+    return;
+  }
+
+  // 显示加载状态
+  toast(`正在加载 ${name} 配置...`, "info");
+
+  // 获取当前配置
+  fetch("/system/adminsettings/payment/get/" + name, {
+    method: "GET",
+    credentials: "include",
+  })
+    .then(res => res.json())
+    .then(resp => {
+      if (resp.code !== 0) {
+        toast(resp.msg || `未找到 ${name} 配置`, "error");
         return;
-    }
+      }
 
-    // 显示加载状态
-    toast(`正在加载 ${name} 配置...`, "info");
+      const merchant = resp.data || {};
+      let cfg = {};
+      try {
+        cfg = merchant.config ? JSON.parse(merchant.config) : {};
+      } catch (e) {
+        console.error("解析配置失败", e);
+      }
 
-    // 获取当前配置
-    fetch("/system/adminsettings/payment/get/" + name, {
-        method: "GET",
-        credentials: "include",
+      // 根据不同支付类型赋值表单
+      switch (name) {
+        case "alipay":
+          form.querySelector("#alipay-status-select").value = merchant.status === 1 ? "enabled" : "disabled";
+          form.querySelector("#alipay-app-id").value = cfg.appId || "";
+          form.querySelector("#alipay-private-key").value = cfg.privateKey || "";
+          form.querySelector("#alipay-public-key").value = cfg.alipayPublicKey || "";
+          form.querySelector("#alipay-format").value = cfg.format || "json";
+          form.querySelector("#alipay-charset").value = cfg.charset || "utf-8";
+          form.querySelector("#alipay-sign-type").value = cfg.signType || "RSA2";
+          break;
+        case "wechat":
+          form.querySelector("#wechat-status-select").value = merchant.status === 1 ? "enabled" : "disabled";
+          form.querySelector("#wechat-appid").value = cfg.appId || "";
+          form.querySelector("#wechat-mch-id").value = cfg.mchId || "";
+          form.querySelector("#wechat-api-key").value = cfg.apiKey || "";
+          form.querySelector("#wechat-appsecret").value = cfg.appSecret || "";
+          // 文件输入不自动赋值，用户需要重新选择
+          break;
+        case "stripe":
+          form.querySelector("#stripe-status-select").value = merchant.status === 1 ? "enabled" : "disabled";
+          form.querySelector("#stripe-publishable-key").value = cfg.publishableKey || "";
+          form.querySelector("#stripe-secret-key").value = cfg.secretKey || "";
+          form.querySelector("#stripe-webhook-secret").value = cfg.webhookSecret || "";
+          form.querySelector("#stripe-currency").value = cfg.currency || "usd";
+          break;
+        case "paypal":
+          form.querySelector("#paypal-status-select").value = merchant.status === 1 ? "enabled" : "disabled";
+          form.querySelector("#paypal-mode").value = cfg.mode || "sandbox";
+          form.querySelector("#paypal-client-id").value = cfg.clientId || "";
+          form.querySelector("#paypal-client-secret").value = cfg.clientSecret || "";
+          form.querySelector("#paypal-webhook-id").value = cfg.webhookId || "";
+          break;
+        case "circle":
+          form.querySelector("#circle-status-select").value = merchant.status === 1 ? "enabled" : "disabled";
+          form.querySelector("#circle-api-key").value = cfg.apiKey || "";
+          form.querySelector("#circle-entity-secret").value = cfg.entitySecret || "";
+          form.querySelector("#circle-base-url").value = cfg.baseUrl || "";
+          form.querySelector("#circle-master-wallet-id").value = cfg.masterWalletId || "";
+          break;
+        default:
+          // 通用表单赋值
+          form.querySelectorAll("input, select, textarea").forEach(el => {
+            if (cfg[el.id]) {
+              el.value = cfg[el.id];
+            }
+          });
+          break;
+      }
+
+      // 显示表单
+      form.style.display = "block";
+      toast(`${name} 配置加载完成`, "success");
     })
-        .then(res => res.json())
-        .then(resp => {
-            if (resp.code !== 0) {
-                toast(resp.msg || `未找到 ${name} 配置`, "error");
-                return;
-            }
-
-            const merchant = resp.data || {};
-            let cfg = {};
-            try {
-                cfg = merchant.config ? JSON.parse(merchant.config) : {};
-            } catch (e) {
-                console.error("解析配置失败", e);
-            }
-
-            // 根据不同支付类型赋值表单
-            switch (name) {
-                case "alipay":
-                    form.querySelector("#alipay-status-select").value = merchant.status === 1 ? "enabled" : "disabled";
-                    form.querySelector("#alipay-app-id").value = cfg.appId || "";
-                    form.querySelector("#alipay-private-key").value = cfg.privateKey || "";
-                    form.querySelector("#alipay-public-key").value = cfg.alipayPublicKey || "";
-                    form.querySelector("#alipay-format").value = cfg.format || "json";
-                    form.querySelector("#alipay-charset").value = cfg.charset || "utf-8";
-                    form.querySelector("#alipay-sign-type").value = cfg.signType || "RSA2";
-                    break;
-                case "wechat":
-                    form.querySelector("#wechat-status-select").value = merchant.status === 1 ? "enabled" : "disabled";
-                    form.querySelector("#wechat-appid").value = cfg.appId || "";
-                    form.querySelector("#wechat-mch-id").value = cfg.mchId || "";
-                    form.querySelector("#wechat-api-key").value = cfg.apiKey || "";
-                    form.querySelector("#wechat-appsecret").value = cfg.appSecret || "";
-                    // 文件输入不自动赋值，用户需要重新选择
-                    break;
-                case "stripe":
-                    form.querySelector("#stripe-status-select").value = merchant.status === 1 ? "enabled" : "disabled";
-                    form.querySelector("#stripe-publishable-key").value = cfg.publishableKey || "";
-                    form.querySelector("#stripe-secret-key").value = cfg.secretKey || "";
-                    form.querySelector("#stripe-webhook-secret").value = cfg.webhookSecret || "";
-                    form.querySelector("#stripe-currency").value = cfg.currency || "usd";
-                    break;
-                case "paypal":
-                    form.querySelector("#paypal-status-select").value = merchant.status === 1 ? "enabled" : "disabled";
-                    form.querySelector("#paypal-mode").value = cfg.mode || "sandbox";
-                    form.querySelector("#paypal-client-id").value = cfg.clientId || "";
-                    form.querySelector("#paypal-client-secret").value = cfg.clientSecret || "";
-                    form.querySelector("#paypal-webhook-id").value = cfg.webhookId || "";
-                    break;
-                case "circle":
-                    form.querySelector("#circle-status-select").value = merchant.status === 1 ? "enabled" : "disabled";
-                    form.querySelector("#circle-api-key").value = cfg.apiKey || "";
-                    form.querySelector("#circle-entity-secret").value = cfg.entitySecret || "";
-                    form.querySelector("#circle-base-url").value = cfg.baseUrl || "";
-                    form.querySelector("#circle-master-wallet-id").value = cfg.masterWalletId || "";
-                    break;
-                default:
-                    // 通用表单赋值
-                    form.querySelectorAll("input, select, textarea").forEach(el => {
-                        if (cfg[el.id]) {
-                            el.value = cfg[el.id];
-                        }
-                    });
-                    break;
-            }
-
-            // 显示表单
-            form.style.display = "block";
-            toast(`${name} 配置加载完成`, "success");
-        })
-        .catch(err => {
-            console.error(err);
-            toast("加载配置失败，请重试", "error");
-        });
+    .catch(err => {
+      console.error(err);
+      toast("加载配置失败，请重试", "error");
+    });
 }
 
 
@@ -272,7 +272,7 @@ async function editUser(id) {
     });
     const data = await response.json();
 
-    if(data.code !== 0){
+    if (data.code !== 0) {
       toast(data.msg, 'error');
       return;
     }
@@ -283,8 +283,8 @@ async function editUser(id) {
     const email = document.getElementById('email');
     const userStatus = document.getElementById('userStatus');
     const expiration = document.getElementById('expiration');
-    if(userId)userId.value = data.data.id;
-    if (username) username.value =  data.data.username;
+    if (userId) userId.value = data.data.id;
+    if (username) username.value = data.data.username;
     if (email) email.value = data.data.email;
     if (userStatus) userStatus.value = data.data.status;
     if (expiration) expiration.value = data.data.expiration;
@@ -313,11 +313,11 @@ async function updateUser() {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       credentials: 'include',
-      body:`id=${id}&username=${username}&email=${email}&status=${userStatus}&expiration=${expiration}`
+      body: `id=${id}&username=${username}&email=${email}&status=${userStatus}&expiration=${expiration}`
     });
     const data = await response.json();
 
-    if(data.code !== 0){
+    if (data.code !== 0) {
       toast(data.msg, 'error');
       return;
     }
@@ -342,7 +342,7 @@ async function editDistributor(distributorId) {
   });
   const data = await response.json();
 
-  if(data.code !== 0){
+  if (data.code !== 0) {
     toast(data.msg, 'error');
     return;
   }
@@ -354,16 +354,16 @@ async function editDistributor(distributorId) {
   openDistributorModal();
 }
 
-async function saveXrayDistributors(){
+async function saveXrayDistributors() {
   const id = document.getElementById('distributors_id').value;
   const commissionRate = document.getElementById('distributors_commissionRate').value;
   const firstChargeBonus = document.getElementById('distributors_firstChargeBonus').value;
 
-  if (!commissionRate){
+  if (!commissionRate) {
     toast('佣金比例不能为空!', 'error');
     return;
   }
-  if (!firstChargeBonus){
+  if (!firstChargeBonus) {
     toast('首充返佣不能为空!', 'error');
     return;
   }
@@ -374,7 +374,7 @@ async function saveXrayDistributors(){
       'Content-Type': 'application/json',
     },
     credentials: 'include',
-    body:JSON.stringify({
+    body: JSON.stringify({
       id,
       commissionRate,
       firstChargeBonus
@@ -385,7 +385,7 @@ async function saveXrayDistributors(){
   if (data.code === 0) {
     toast(`已保存分销商政策`, "success");
     searchDistributors();
-  }else{
+  } else {
     toast(data.msg, 'error');
   }
 }
@@ -397,7 +397,7 @@ function openDistributorModal() {
 
 function closeDistributorModal() {
   const modal = document.getElementById('xrayDistributorsModal');
-  if (modal){
+  if (modal) {
     modal.style.display = 'none';
     document.getElementById('distributors_id').value = '';
     document.getElementById('distributors_commissionRate').value = '';
@@ -493,16 +493,10 @@ async function importLines() {
     });
 }
 
-async function editLine(obj, id){
-  const $tr = $(obj).closest("tr");
-  const pingOffset = $tr.find("input").val() || "";
-  const status = $tr.find("select").val() || "";
-
-  if (!id) {
-    toast("线路ID无效", "error");
-    return;
-  }
-
+async function editLine(obj, id) {
+  const $this = $(obj);
+  const pingOffset = $this.parent().prev().prev().prev().find("input").val();
+  const status = $this.parent().prev().prev().find("select").val();
   // 向后端接口发送 POST 请求
   await fetch("/system/lines/edit", {
     method: "POST",
@@ -510,22 +504,19 @@ async function editLine(obj, id){
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     credentials: 'include',
-    body: `id=${encodeURIComponent(id)}&pingOffset=${encodeURIComponent(pingOffset)}&status=${encodeURIComponent(status)}`,
+    body: `id=${id}&pingOffset=${pingOffset}&status=${status}`,
   }).then((response) => response.json())
-      .then((data) => {
-        if (data.code === 0 || data.code === 200) {
-          toast(`更新线路成功`, "success");
-          if (typeof searchLines === 'function') {
-            searchLines();
-          }
-        } else {
-          toast("更新线路失败：" + (data.msg || "请稍后再试"), "error");
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-        toast("网络错误，请重试", "error");
-      });
+    .then((data) => {
+      if (data.code === 0) {
+        toast(`更新线路成功`, "success");
+        searchLines();
+      } else {
+        toast("更新线路失败，请稍后再试", "error");
+      }
+    })
+    .catch((error) => {
+      toast("网络错误，请重试", "error");
+    });
 }
 
 // ---------------- 活动与经销商设置 ----------------
@@ -546,7 +537,7 @@ function saveActivitySettings() {
       if (data.code === 0) {
         toast(`保存成功`, "success");
         searchActivitySettings();
-      }else{
+      } else {
         toast(data.msg, 'error');
       }
     })
@@ -562,21 +553,21 @@ async function searchActivitySettings() {
   });
   const data = await response.json();
 
-  if(data.code !== 0){
+  if (data.code !== 0) {
     toast(data.msg, 'error');
     return;
   }
 
   document.getElementById("activity-cfg-id").value = data.data.id;
   document.getElementById("activity-participants").value = data.data.participantsCnt;
-  document.getElementById("adjust-participants").value =  data.data.moderatorsCnt;
+  document.getElementById("adjust-participants").value = data.data.moderatorsCnt;
 
   const start = data.data.status === 1;
   const startActivityBtn = document.getElementById("startActivityBtn");
   document.getElementById("activity-participants").disabled = start;
   startActivityBtn.disabled = start;
 
-  if(start){
+  if (start) {
     startActivityBtn.style.opacity = '0.2';
     startActivityBtn.style.cursor = 'not-allowed';
   }
@@ -592,67 +583,67 @@ async function searchDistributorsSettings() {
   });
   const data = await response.json();
 
-  if(data.code !== 0){
+  if (data.code !== 0) {
     toast(data.msg, 'error');
     return;
   }
 
   document.getElementById("dealer-commission").value = data.data.commissionRate;
-  document.getElementById("dealer-discount").value =  data.data.firstChargeBonus;
+  document.getElementById("dealer-discount").value = data.data.firstChargeBonus;
 
   window.distributorsConfig = data.data;
 }
 
-function addInnerUser(){
+function addInnerUser() {
   openInnerUserModal();
 }
 
-function delInnerUser(id){
+function delInnerUser(id) {
   fetch(`/system/adminsettings/del-inner-user/${id}`, {
     method: 'DELETE',
     credentials: 'include',
   }).then((response) => response.json())
-      .then((data) => {
-        if (data.code === 0) {
-          toast(`删除用户成功`, "success");
-          searchInnerUsers();
-        }else{
-          toast(data.msg, 'error');
-        }
-  })
+    .then((data) => {
+      if (data.code === 0) {
+        toast(`删除用户成功`, "success");
+        searchInnerUsers();
+      } else {
+        toast(data.msg, 'error');
+      }
+    })
 }
 
-function disableInnerUser(id, status){
+function disableInnerUser(id, status) {
   fetch(`/system/adminsettings/disable-inner-user/${id}`, {
     method: 'POST',
     credentials: 'include',
   }).then((response) => response.json())
-      .then((data) => {
-        if (data.code === 0) {
-          toast(status == 0 ? `禁用用户成功` : `启用用户成功`, "success");
-          searchInnerUsers();
-        }else{
-          toast(data.msg, 'error');
-        }
-      })
+    .then((data) => {
+      if (data.code === 0) {
+        toast(status == 0 ? `禁用用户成功` : `启用用户成功`, "success");
+        searchInnerUsers();
+      } else {
+        toast(data.msg, 'error');
+      }
+    })
 }
 
-function saveInnerUser(){
+function saveInnerUser() {
   const username = document.getElementById("inner_username").value;
   const password = document.getElementById("inner_password").value;
   const role = document.getElementById("inner_type").value;
 
-  if(!username){
+  if (!username) {
     toast("用户名不能为空", "warning");
     return;
   }
 
-  if(!password){
+  if (!password) {
     toast("密码不能为空", "warning");
     return;
   }
 
-  if(!role){
+  if (!role) {
     toast("请选择用户角色", "warning");
     return;
   }
@@ -669,18 +660,18 @@ function saveInnerUser(){
       type: role
     }),
   }).then((response) => response.json())
-      .then((data) => {
-        if (data.code === 0) {
-          toast(`添加用户成功`, "success");
-          document.getElementById("inner_username").value = '';
-          document.getElementById("inner_password").value = '';
-          document.getElementById("inner_type").value = 'admin-slave';
-          closeInnerUserModal();
-          searchInnerUsers();
-        }else{
-          toast(data.msg, 'error');
-        }
-      })
+    .then((data) => {
+      if (data.code === 0) {
+        toast(`添加用户成功`, "success");
+        document.getElementById("inner_username").value = '';
+        document.getElementById("inner_password").value = '';
+        document.getElementById("inner_type").value = 'admin-slave';
+        closeInnerUserModal();
+        searchInnerUsers();
+      } else {
+        toast(data.msg, 'error');
+      }
+    })
 }
 
 
@@ -693,19 +684,19 @@ function startActivity() {
     },
     credentials: 'include',
   }).then((response) => response.json())
-      .then((data) => {
-        if (data.code === 0) {
-          toast(`开启活动成功`, "success");
-          searchActivitySettings();
-        }else{
-          toast(data.msg, 'error');
-        }
-      })
+    .then((data) => {
+      if (data.code === 0) {
+        toast(`开启活动成功`, "success");
+        searchActivitySettings();
+      } else {
+        toast(data.msg, 'error');
+      }
+    })
 }
 
 function saveDealerPolicy() {
-  const  commission = Number(document.getElementById("dealer-commission").value || 0);
-  const  discount = Number(document.getElementById("dealer-discount").value || 0);
+  const commission = Number(document.getElementById("dealer-commission").value || 0);
+  const discount = Number(document.getElementById("dealer-discount").value || 0);
   fetch(`/system/distributors/save-settings`, {
     method: 'POST',
     headers: {
@@ -714,14 +705,14 @@ function saveDealerPolicy() {
     credentials: 'include',
     body: `id=${window.distributorsConfig.id}&commissionRate=${commission}&firstChargeBonus=${discount}`,
   }).then((response) => response.json())
-      .then((data) => {
-        if (data.code === 0) {
-          toast(`已保存经销商政策`, "success");
-          searchDistributorsSettings();
-        }else{
-          toast(data.msg, 'error');
-        }
-  })
+    .then((data) => {
+      if (data.code === 0) {
+        toast(`已保存经销商政策`, "success");
+        searchDistributorsSettings();
+      } else {
+        toast(data.msg, 'error');
+      }
+    })
 }
 function resetDealerPolicy() {
   document.getElementById("dealer-commission").value = window.distributorsConfig?.commissionRate;
@@ -901,11 +892,11 @@ async function approveDealer(id, email) {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     credentials: 'include',
-    body:`id=${id}&status=approved`
+    body: `id=${id}&status=approved`
   });
   const data = await response.json();
 
-  if(data.code !== 0){
+  if (data.code !== 0) {
     toast(data.msg, 'error');
     return;
   }
@@ -921,11 +912,11 @@ async function rejectDealer(id, email) {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     credentials: 'include',
-    body:`id=${id}&status=rejected`
+    body: `id=${id}&status=rejected`
   });
   const data = await response.json();
 
-  if(data.code !== 0){
+  if (data.code !== 0) {
     toast(data.msg, 'error');
     return;
   }
@@ -1036,41 +1027,6 @@ async function loadAdminModals() {
     toast && toast('加载模态框失败，请刷新重试', 'error');
   }
 }
-
-async function deleteLine(objOrId, id) {
-  const lineId = typeof objOrId === 'string' ? objOrId : id;
-  if (!lineId) return;
-
-  if (!confirm(`确定要删除线路 ${lineId} 吗？`)) {
-    return;
-  }
-
-  try {
-    const response = await fetch('/system/lines/remove', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      credentials: 'include',
-      body: `ids=${encodeURIComponent(lineId)}`,
-    });
-    const data = await response.json();
-    if (data.code === 0 || data.code === 200) {
-      toast('删除线路成功', 'success');
-      if (typeof searchLines === 'function') {
-        searchLines();
-      }
-    } else {
-      toast('删除失败：' + (data.msg || '请稍后再试'), 'error');
-    }
-  } catch (error) {
-    console.error(error);
-    toast('网络错误，请重试', 'error');
-  }
-}
-
-window.deleteLine = deleteLine;
-window.editLine = editLine;
 
 // DOM 就绪后加载模态框
 document.addEventListener('DOMContentLoaded', function () {
