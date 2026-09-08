@@ -199,7 +199,7 @@ public class CsvUtils {
                 try {
                     String serverName = StringUtils.isNotBlank(sni) ? sni : host;
                     javax.net.ssl.SSLParameters sslParams = sslSocket.getSSLParameters();
-                    sslParams.setServerNames(java.util.Collections.singletonList(new java.net.SNIHostName(serverName)));
+                    sslParams.setServerNames(java.util.Collections.singletonList(new javax.net.ssl.SNIHostName(serverName)));
                     sslSocket.setSSLParameters(sslParams);
                 } catch (Exception ignored) {
                 }
