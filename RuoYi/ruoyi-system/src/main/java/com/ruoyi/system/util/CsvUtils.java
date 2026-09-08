@@ -196,10 +196,13 @@ public class CsvUtils {
                 javax.net.ssl.SSLSocket sslSocket = (javax.net.ssl.SSLSocket) factory.createSocket(socket, host, port, true);
 
                 // 设置 SNI 扩展
-                String serverName = StringUtils.isNotBlank(sni) ? sni : host;
-                javax.net.ssl.SSLParameters sslParams = sslSocket.getSSLParameters();
-                sslParams.setServerNames(java.util.Collections.singletonList(new java.net.SNIHostName(serverName)));
-                sslSocket.setSSLParameters(sslParams);
+                try {
+                    String serverName = StringUtils.isNotBlank(sni) ? sni : host;
+                    javax.net.ssl.SSLParameters sslParams = sslSocket.getSSLParameters();
+                    sslParams.setServerNames(java.util.Collections.singletonList(new java.net.SNIHostName(serverName)));
+                    sslSocket.setSSLParameters(sslParams);
+                } catch (Exception ignored) {
+                }
 
                 sslSocket.startHandshake();
                 socket = sslSocket;
