@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.XrayChainProxyNodeMapper">
+
+    <resultMap type="XrayChainProxyNode" id="XrayChainProxyNodeResult">
+        <result property="id"             column="id"              />
+        <result property="nodeKey"        column="node_key"         />
+        <result property="userId"         column="user_id"         />
+        <result property="sourceType"     column="source_type"     />
+        <result property="protocol"       column="protocol"        />
+        <result property="host"           column="host"            />
+        <result property="port"           column="port"            />
+        <result property="username"       column="username"        />
+        <result property="passwordCipher" column="password_cipher" />
+        <result property="remark"         column="remark"          />
+        <result property="exitIp"         column="exit_ip"         />
+        <result property="countryCode"    column="country_code"    />
+        <result property="region"         column="region"          />
+        <result property="city"           column="city"            />
+        <result property="aliveStatus"    column="alive_status"    />
+        <result property="latencyMs"      column="latency_ms"      />
+        <result property="refreshUrl"     column="refresh_url"     />
+        <result property="lastCheckTime"  column="last_check_time" />
+        <result property="sortOrder"      column="sort_order"      />
+        <result property="delFlag"        column="del_flag"        />
+        <result property="createBy"       column="create_by"       />
+        <result property="createTime"     column="create_time"     />
+        <result property="updateTime"     column="update_time"     />
+    </resultMap>
+
+    <sql id="selectXrayChainProxyNodeVo">
+        select id, node_key, user_id, source_type, protocol, host, port, username, password_cipher,
+               remark, exit_ip, country_code, region, city, alive_status, latency_ms, refresh_url,
+               last_check_time, sort_order, del_flag, create_by, create_time, update_time
+        from xray_chain_proxy_node
+    </sql>
+
+    <select id="selectXrayChainProxyNodeList" parameterType="XrayChainProxyNode" resultMap="XrayChainProxyNodeResult">
+        <include refid="selectXrayChainProxyNodeVo"/>
+        where del_flag = '0'
+        <if test="userId != null">
+            and (user_id = #{userId} or (user_id = 0 and source_type = 2))
+        </if>
+        <if test="protocol != null and protocol != ''">
+            and protocol = #{protocol}
+        </if>
+        <if test="aliveStatus != null">
+            and alive_status = #{aliveStatus}
+        </if>
+        <if test="countryCode != null and countryCode != ''">
+            and country_code = #{countryCode}
+        </if>
+        <if test="remark != null and remark != ''">
+            and remark like concat('%', #{remark}, '%')
+        </if>
+        order by sort_order desc, alive_status asc, latency_ms asc, id desc
+    </select>
+
+    <select id="selectXrayChainProxyNodeById" parameterType="Long" resultMap="XrayChainProxyNodeResult">
+        <include refid="selectXrayChainProxyNodeVo"/>
+        where id = #{id} and del_flag = '0'
+    </select>
+
+    <select id="selectXrayChainProxyNodeByKey" parameterType="String" resultMap="XrayChainProxyNodeResult">
+        <include refid="selectXrayChainProxyNodeVo"/>
+        where node_key = #{nodeKey} and del_flag = '0'
+        limit 1
+    </select>
+
+    <select id="checkNodeExists" resultMap="XrayChainProxyNodeResult">
+        <include refid="selectXrayChainProxyNodeVo"/>
+        where user_id = #{userId}
+          and host = #{host}
+          and port = #{port}
+          and del_flag = '0'
+        limit 1
+    </select>
+
+    <insert id="insertXrayChainProxyNode" parameterType="XrayChainProxyNode" useGeneratedKeys="true" keyProperty="id">
+        insert into xray_chain_proxy_node (
+            node_key, user_id, source_type, protocol, host, port, username, password_cipher,
+            remark, exit_ip, country_code, region, city, alive_status, latency_ms, refresh_url,
+            last_check_time, sort_order, del_flag, create_by, create_time, update_time
+        ) values (
+            #{nodeKey}, #{userId}, #{sourceType}, #{protocol}, #{host}, #{port}, #{username}, #{passwordCipher},
+            #{remark}, #{exitIp}, #{countryCode}, #{region}, #{city}, #{aliveStatus}, #{latencyMs}, #{refreshUrl},
+            #{lastCheckTime}, #{sortOrder}, '0', #{createBy}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <insert id="batchInsertXrayChainProxyNode">
+        insert into xray_chain_proxy_node (
+            node_key, user_id, source_type, protocol, host, port, username, password_cipher,
+            remark, exit_ip, country_code, region, city, alive_status, latency_ms, refresh_url,
+            last_check_time, sort_order, del_flag, create_by, create_time, update_time
+        ) values
+        <foreach collection="list" item="item" separator=",">
+        (
+            #{item.nodeKey}, #{item.userId}, #{item.sourceType}, #{item.protocol}, #{item.host}, #{item.port}, #{item.username}, #{item.passwordCipher},
+            #{item.remark}, #{item.exitIp}, #{item.countryCode}, #{item.region}, #{item.city}, #{item.aliveStatus}, #{item.latencyMs}, #{item.refreshUrl},
+            #{item.lastCheckTime}, #{item.sortOrder}, '0', #{item.createBy}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+        )
+        </foreach>
+    </insert>
+
+    <update id="updateXrayChainProxyNode" parameterType="XrayChainProxyNode">
+        update xray_chain_proxy_node
+        <set>
+            <if test="protocol != null and protocol != ''">protocol = #{protocol},</if>
+            <if test="host != null and host != ''">host = #{host},</if>
+            <if test="port != null">port = #{port},</if>
+            <if test="username != null">username = #{username},</if>
+            <if test="passwordCipher != null and passwordCipher != ''">password_cipher = #{passwordCipher},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="exitIp != null">exit_ip = #{exitIp},</if>
+            <if test="countryCode != null">country_code = #{countryCode},</if>
+            <if test="region != null">region = #{region},</if>
+            <if test="city != null">city = #{city},</if>
+            <if test="aliveStatus != null">alive_status = #{aliveStatus},</if>
+            <if test="latencyMs != null">latency_ms = #{latencyMs},</if>
+            <if test="refreshUrl != null">refresh_url = #{refreshUrl},</if>
+            <if test="lastCheckTime != null">last_check_time = #{lastCheckTime},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            update_time = CURRENT_TIMESTAMP
+        </set>
+        where (id = #{id} or node_key = #{nodeKey})
+          <if test="userId != null">and user_id = #{userId}</if>
+    </update>
+
+    <update id="deleteXrayChainProxyNodeById">
+        update xray_chain_proxy_node
+        set del_flag = '2', update_time = CURRENT_TIMESTAMP
+        where id = #{id}
+          <if test="userId != null">and user_id = #{userId}</if>
+    </update>
+
+    <update id="deleteXrayChainProxyNodeByKey">
+        update xray_chain_proxy_node
+        set del_flag = '2', update_time = CURRENT_TIMESTAMP
+        where node_key = #{nodeKey}
+          <if test="userId != null">and user_id = #{userId}</if>
+    </update>
+
+    <update id="deleteXrayChainProxyNodeByIds">
+        update xray_chain_proxy_node
+        set del_flag = '2', update_time = CURRENT_TIMESTAMP
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        <if test="userId != null">and user_id = #{userId}</if>
+    </update>
+
+    <update id="deleteXrayChainProxyNodeByKeys">
+        update xray_chain_proxy_node
+        set del_flag = '2', update_time = CURRENT_TIMESTAMP
+        where node_key in
+        <foreach collection="nodeKeys" item="k" open="(" separator="," close=")">
+            #{k}
+        </foreach>
+        <if test="userId != null">and user_id = #{userId}</if>
+    </update>
+
+</mapper>

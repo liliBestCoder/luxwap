@@ -65,6 +65,14 @@ public class XrayDistributorsConfig extends BaseEntity
         this.firstChargeBonus = firstChargeBonus;
     }
 
+    public Long getBonusMonths() {
+        return firstChargeBonus;
+    }
+
+    public void setBonusMonths(Long bonusMonths) {
+        this.firstChargeBonus = bonusMonths;
+    }
+
     public Date getCreatedAt() {
         return createdAt;
     }

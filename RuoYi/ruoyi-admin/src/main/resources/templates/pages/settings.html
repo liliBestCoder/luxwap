@@ -7,6 +7,7 @@
 
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/buttons.css">
+    <link rel="stylesheet" href="../css/admin.css">
     <link rel="stylesheet" href="../css/all.min.css">
 </head>
 <body>
@@ -17,7 +18,7 @@
 	
 	
     <!-- 常规设置模块 -->
-    <div id="guard-tab" class="main-tab-content">
+    <div id="guard-tab" class="main-tab-content active">
         <!-- 基本信息设置 -->
         <div class="card" id="basicInfoCard">
             <div class="card-header">
@@ -84,24 +85,9 @@
                     <label class="form-label">修改登录密码</label>
                     <div style="display: flex; gap: 10px; align-items: center;">
                         <input type="password" class="form-control-auto" value="••••••••" readonly>
-                        <button class="btn btn-primary" onclick="editPassword()">
+                        <button class="btn btn-primary" onclick="openPasswordModal()">
                             <i class="fas fa-key"></i> 修改密码
                         </button>
-                    </div>
-                    <div id="password-edit-form" style="display: none; margin-top: 10px;">
-						<div style="display: flex; flex-direction: column">
-                        <input type="password" class="form-control-auto" id="current-password" placeholder="请输入当前密码" style="margin-bottom: 10px;">
-                        <input type="password" class="form-control-auto" id="new-password" placeholder="请输入新密码" style="margin-bottom: 10px;">
-                        <input type="password" class="form-control-auto" id="confirm-password" placeholder="请确认新密码" style="margin-bottom: 10px;">
-							</div>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn btn-success" onclick="savePassword()">
-                                <i class="fas fa-save"></i> 更新密码
-                            </button>
-                            <button class="btn btn-secondary" onclick="cancelPasswordEdit()">
-                                <i class="fas fa-times"></i> 取消
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -243,6 +229,38 @@
             </div>
         </div>
     </div>	
+    <!-- 🔴修改密码模态框 (Modal) -->
+    <div id="passwordModal" class="modal" onclick="if(event.target===this) closePasswordModal()">
+        <div class="modal-content" style="max-width: 460px;">
+            <div class="modal-header">
+                <h3 style="margin: 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-key" style="color: var(--primary-color);"></i> 修改登录密码
+                </h3>
+                <span class="modal-close" onclick="closePasswordModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label" style="display: block; margin-bottom: 6px; font-weight: 500;">当前密码</label>
+                    <input type="password" class="form-control" id="current-password" placeholder="请输入当前密码" autocomplete="current-password" style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label" style="display: block; margin-bottom: 6px; font-weight: 500;">新密码</label>
+                    <input type="password" class="form-control" id="new-password" placeholder="请输入新密码（至少6位）" autocomplete="new-password" style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 6px;">
+                    <label class="form-label" style="display: block; margin-bottom: 6px; font-weight: 500;">确认新密码</label>
+                    <input type="password" class="form-control" id="confirm-password" placeholder="请再次输入新密码" autocomplete="new-password" style="width: 100%;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">取消</button>
+                <button type="button" class="btn btn-primary" onclick="savePassword()">
+                    <i class="fas fa-save"></i> 更新密码
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 页面脚本 -->
     <script src="../JS/common.js" defer></script>
     <script src="../JS/settings.js" defer></script>	

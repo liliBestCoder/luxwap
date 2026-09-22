@@ -66,44 +66,36 @@
             display: none;
         }
     </style>
+    <!-- Cloudflare Turnstile 人机验证 SDK (仅在后端开启时加载) -->
+    <script th:if="${turnstileEnabled}" src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 <div class="login-container">
     <h1>Luxwap 管理后台</h1>
     <div class="error-message" id="errorMsg"></div>
-    <input type="text" id="username" placeholder="用户名">
-    <input type="password" id="password" placeholder="密码">
-    <!-- 替换原有的验证码部分 -->
-    <div class="form-group" style="margin-bottom: 20px; width: 100%;">
-        <div style="display: flex; align-items: flex-start; gap: 10px;">
-            <input type="text" id="validateCode" name="validateCode" class="form-control code" placeholder="验证码" maxlength="5"
-                   style="flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; margin-bottom: 0;" />
-            <div style="flex-shrink: 0; margin-top: 0;">
-                <a href="javascript:void(0);" title="点击更换验证码" style="display: block;">
-                    <img class="imgcode" th:src="@{/captcha/captchaImage(type='math')}"
-                         style="height: 38px; border: 1px solid #ccc; border-radius: 4px; vertical-align: top;" />
-                </a>
-            </div>
-        </div>
+    <input type="text" id="username" placeholder="用户名" autocomplete="username">
+    <input type="password" id="password" placeholder="密码" autocomplete="current-password">
+
+    <!-- Cloudflare Turnstile 验证容器 (仅在后台开启时展示) -->
+    <div th:if="${turnstileEnabled}" style="margin-bottom: 20px; display: flex; justify-content: center;">
+        <div class="cf-turnstile" th:data-sitekey="${turnstileSiteKey}" data-theme="light"></div>
     </div>
+
     <button id="loginBtn">登录</button>
 </div>
 
-<script th:inline="javascript"> var ctx = [[@{/}]];</script>
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var turnstileEnabled = [[${turnstileEnabled}]];
+</script>
 
 <script>
     const loginBtn = document.getElementById('loginBtn');
     const errorMsg = document.getElementById('errorMsg');
 
-    $('.imgcode').click(function() {
-        var url = ctx + "captcha/captchaImage?type=math&s=" + Math.random();
-        $(".imgcode").attr("src", url);
-    });
-
-    async function login(){
+    async function login() {
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value.trim();
-        const validateCode = document.getElementById('validateCode').value.trim();
 
         if (!username || !password) {
             errorMsg.textContent = '用户名和密码不能为空';
@@ -111,10 +103,25 @@
             return;
         }
 
-        if(!validateCode){
-            errorMsg.textContent = '验证码不饿能为空';
-            errorMsg.style.display = 'block';
-            return;
+        let cfToken = '';
+        if (turnstileEnabled) {
+            const tokenInput = document.querySelector('[name="cf-turnstile-response"]');
+            cfToken = tokenInput ? tokenInput.value : '';
+            if (!cfToken) {
+                errorMsg.textContent = '请先完成人机验证';
+                errorMsg.style.display = 'block';
+                return;
+            }
+        }
+
+        errorMsg.style.display = 'none';
+
+        const params = new URLSearchParams();
+        params.append('username', username);
+        params.append('password', password);
+        params.append('rememberMe', 'true');
+        if (turnstileEnabled && cfToken) {
+            params.append('cfTurnstileToken', cfToken);
         }
 
         try {
@@ -123,16 +130,19 @@
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body:`username=${username}&password=${password}&validateCode=${validateCode}&rememberMe=true`,
-                credentials: 'include' // 保证 cookie 被保存
+                body: params.toString(),
+                credentials: 'include'
             });
 
             const data = await res.json();
 
-            if(data.code !== 0){
-                $('.imgcode').click();
-                validateCode.value = '';
-                toast(data.msg || "登录失败, 请重试...", 'error');
+            if (data.code !== 0) {
+                // 如果开启了 Turnstile，重置人机验证
+                if (window.turnstile) {
+                    window.turnstile.reset();
+                }
+                errorMsg.textContent = data.msg || '登录失败，请重试';
+                errorMsg.style.display = 'block';
                 return;
             }
 
@@ -144,18 +154,14 @@
         }
     }
 
-    loginBtn.addEventListener('click', async () => {
-        login();
-    });
+    loginBtn.addEventListener('click', login);
 
-    const validateCode = document.getElementById('validateCode');
-    if (validateCode) {
-        validateCode.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                login();
-            }
-        });
-    }
+    document.getElementById('username').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') login();
+    });
+    document.getElementById('password').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') login();
+    });
 </script>
 </body>
 </html>

@@ -20,6 +20,10 @@ import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.framework.web.service.ConfigService;
 
+import com.ruoyi.common.utils.ShiroUtils;
+import com.ruoyi.framework.security.CloudflareTurnstileService;
+import org.springframework.web.bind.annotation.RequestParam;
+
 /**
  * 登录验证
  * 
@@ -37,6 +41,9 @@ public class SysLoginController extends BaseController
     @Autowired
     private ConfigService configService;
 
+    @Autowired
+    private CloudflareTurnstileService turnstileService;
+
     @GetMapping("/login")
     public String login(HttpServletRequest request, HttpServletResponse response, ModelMap mmap)
     {
@@ -49,13 +56,28 @@ public class SysLoginController extends BaseController
         mmap.put("isRemembered", rememberMe);
         // 是否开启用户注册
         mmap.put("isAllowRegister", Convert.toBool(configService.getKey("sys.account.registerUser"), false));
+        // Cloudflare Turnstile 特性开关与公钥传递
+        mmap.put("turnstileEnabled", turnstileService != null && turnstileService.isEnabled());
+        mmap.put("turnstileSiteKey", turnstileService != null ? turnstileService.getSiteKey() : "");
         return "login";
     }
 
     @PostMapping("/login")
     @ResponseBody
-    public AjaxResult ajaxLogin(String username, String password, Boolean rememberMe)
+    public AjaxResult ajaxLogin(String username, String password, Boolean rememberMe,
+                                @RequestParam(value = "cfTurnstileToken", required = false) String cfTurnstileToken,
+                                HttpServletRequest request)
     {
+        // 若开启了 Cloudflare Turnstile 人机验证，执行校验
+        if (turnstileService != null && turnstileService.isEnabled())
+        {
+            String clientIp = ShiroUtils.getIp();
+            if (!turnstileService.verify(cfTurnstileToken, clientIp))
+            {
+                return error("人机验证未通过，请刷新页面重试");
+            }
+        }
+
         UsernamePasswordToken token = new UsernamePasswordToken(username, password, rememberMe);
         Subject subject = SecurityUtils.getSubject();
         try

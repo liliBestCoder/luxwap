@@ -17,31 +17,29 @@
     <div id="billingTrend" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px;">
         <div class="card">
             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 class="card-title">收入趋势</h3> <!-- 柱状图展示 -->
+                <h3 class="card-title">收入趋势</h3>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-secondary" style="padding: 5px 10px;">按日</button>
-                    <button class="btn btn-secondary" style="padding: 5px 10px;">按月</button>
-                    <button class="btn btn-secondary" style="padding: 5px 10px;">按年</button>
+                    <button class="btn btn-secondary btn-period" style="padding: 5px 10px;" onclick="switchTrendPeriod('day', this)">按日</button>
+                    <button class="btn btn-primary btn-period" style="padding: 5px 10px;" onclick="switchTrendPeriod('month', this)">按月</button>
+                    <button class="btn btn-secondary btn-period" style="padding: 5px 10px;" onclick="switchTrendPeriod('year', this)">按年</button>
                 </div>
             </div>
-            <div style="height: 300px; background: var(--hover-bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
-                <i class="fas fa-chart-line" style="font-size: 48px; margin-right: 10px;"></i>
-                图表区域 - 收入趋势柱状图
+            <div id="chart-trend-container" style="height: 300px; padding: 20px; display: flex; flex-direction: column; justify-content: flex-end;">
+                <!-- 动态柱状图由 billing.js 渲染 -->
             </div>
         </div>
         
         <div id="billingSource" class="card">
             <div class="card-header">
                 <h3 class="card-title">收入分布</h3>
-				    <div style="display: flex; gap: 10px;">                  
-                    <button class="btn btn-secondary" style="padding: 5px 10px;">按月</button>
-                    <button class="btn btn-secondary" style="padding: 5px 10px;">按年</button>
-                	</div>
+                <div style="display: flex; gap: 10px;">                  
+                    <button class="btn btn-primary btn-source-period" style="padding: 5px 10px;" onclick="switchSourcePeriod('month', this)">按月</button>
+                    <button class="btn btn-secondary btn-source-period" style="padding: 5px 10px;" onclick="switchSourcePeriod('year', this)">按年</button>
+                </div>
             </div>
-				<div style="height: 300px; background: var(--hover-bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
-                <i class="fas fa-chart-line" style="font-size: 48px; margin-right: 10px;"></i>
-            		图表区域 - 首充30%/非首充用户70%饼状图
-				</div>	
+            <div id="chart-source-container" style="height: 300px; padding: 20px; display: flex; align-items: center; justify-content: center;">
+                <!-- 动态饼图/环形图由 billing.js 渲染 -->
+            </div>	
         </div>
     </div>
 
@@ -96,57 +94,22 @@
             <table class="table" id="billsTable">
                 <thead>
                     <tr>
-                        <th>付款日期&nbsp;</th>
+                        <th>付款日期</th>
                         <th>账单编号</th>
                         <th>用户名</th>
                         <th>金额</th>
-                        <th>有效期&nbsp;</th>
+                        <th>有效期</th>
                         <th>首充客户</th>
                         <th>分润</th>
                         <th>归属</th>
+                        <th>操作</th>
                     </tr>
                 </thead>
                 <tbody id="billsTableBody">
-                    <!-- 示例数据 -->
                     <tr>
-                        <td>2024-01-15</td>
-                        <td>BILL-2024-001</td>
-                        <td>张三</td>
-                        <td>$15.03</td>
-                        <td>2024-02-15</td>
-                        <td>是</td>
-                        <td><span style="color: var(--success-color)">$0.00</span></td>
-                        <td><span class="belongto belongto-inner">内部</span></td>
-                    </tr>
-                    <tr>
-                        <td>2024-01-14</td>
-                        <td>BILL-2024-002</td>
-                        <td>张三</td>
-                        <td>$8.00</td>
-                        <td>2024-01-31</td>
-                        <td>否</td>
-                        <td><span style="color: var(--success-color)">$0.00</span></td>
-                        <td><span class="belongto belongto-inner">内部</span></td>
-                    </tr>
-                    <tr>
-                        <td>2024-01-13</td>
-                        <td>BILL-2024-003</td>
-                        <td>张三</td>
-                        <td>$33.99</td>
-                        <td>2024-01-20</td>
-                        <td>是</td>
-                        <td><span style="color: var(--warning-color)">$3.20</span></td>
-                        <td><span class="belongto belongto-outer">分销商</span></td>
-                    </tr>
-                    <tr>
-                        <td>2024-01-12</td>
-                        <td>BILL-2024-004</td>
-                        <td>李四</td>
-                        <td>$3.66</td>
-                        <td>2024-01-19</td>
-                        <td>否</td>
-                        <td><span style="color: var(--warning-color)">$1.50</span></td>
-                        <td><span class="belongto belongto-outer">分销商</span></td>
+                        <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                            <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> 正在加载账单数据...
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -154,19 +117,35 @@
 
         <!-- 🔴分页 -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);">
-            <div style="color: var(--text-secondary);">
-                显示 1-4 条，共 4 条记录
+            <div id="pagination-info" style="color: var(--text-secondary);">
+                显示 0 条记录
             </div>
-            <div style="display: flex; gap: 5px;">
-                <button class="btn btn-secondary" style="padding: 5px 10px;" disabled>上一页</button>
-                <button class="btn btn-primary" style="padding: 5px 10px;">1</button>
-                <button class="btn btn-secondary" style="padding: 5px 10px;" disabled>下一页</button>
+            <div id="pagination-controls" style="display: flex; gap: 6px; align-items: center;">
+                <button class="btn btn-secondary" id="btn-prev-page" style="padding: 5px 12px;" onclick="prevPage()" disabled>上一页</button>
+                <span id="page-display" style="padding: 0 10px; font-weight: 500;">第 1 页</span>
+                <button class="btn btn-secondary" id="btn-next-page" style="padding: 5px 12px;" onclick="nextPage()" disabled>下一页</button>
             </div>
         </div>
     </div>
-<!-- 内容主体 --> 
-	<!-- Scripts -->
-	<script src="../JS/common.js" defer></script>
-	<script src="../JS/billing.js" defer></script>
+
+    <!-- 🔴账单详情模态框 -->
+    <div id="billModal" class="modal" onclick="if(event.target===this) closeBillModal()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; align-items: center; justify-content: center;">
+        <div class="modal-content" style="background: var(--card-bg, #fff); border-radius: 8px; width: 90%; max-width: 520px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden;">
+            <div class="modal-header" style="padding: 16px 20px; border-bottom: 1px solid var(--border-color, #eee); display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="billModalTitle" style="margin: 0; font-size: 18px;">账单详情</h3>
+                <span style="font-size: 24px; cursor: pointer; color: var(--text-secondary);" onclick="closeBillModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="billDetails" style="padding: 20px;">
+                <!-- 动态填充 -->
+            </div>
+            <div class="modal-footer" style="padding: 12px 20px; border-top: 1px solid var(--border-color, #eee); text-align: right;">
+                <button class="btn btn-secondary" onclick="closeBillModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../JS/common.js" defer></script>
+    <script src="../JS/billing.js" defer></script>
 </body>
 </html>

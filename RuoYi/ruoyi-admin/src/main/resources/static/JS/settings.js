@@ -62,10 +62,42 @@ function cancelEmailEdit() {
     document.getElementById('new-email').value = '';
 }
 
-// 密码修改功能
-function editPassword() {
-    document.getElementById('password-edit-form').style.display = 'block';
+// 密码修改功能（浮窗层 Modal 控制）
+function openPasswordModal() {
+    const modal = document.getElementById('passwordModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.getElementById('current-password').value = '';
+        document.getElementById('new-password').value = '';
+        document.getElementById('confirm-password').value = '';
+        setTimeout(() => document.getElementById('current-password')?.focus(), 100);
+    }
 }
+
+function closePasswordModal() {
+    const modal = document.getElementById('passwordModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.getElementById('current-password').value = '';
+        document.getElementById('new-password').value = '';
+        document.getElementById('confirm-password').value = '';
+    }
+}
+
+function editPassword() {
+    openPasswordModal();
+}
+
+function cancelPasswordEdit() {
+    closePasswordModal();
+}
+
+// 监听 ESC 键关闭模态框
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' || e.keyCode === 27) {
+        closePasswordModal();
+    }
+});
 
 function logout() {
     fetch(`/logout`, {
@@ -126,13 +158,7 @@ async function savePassword() {
     }
 
     toast('密码已成功更新', 'success');
-}
-
-function cancelPasswordEdit() {
-    document.getElementById('password-edit-form').style.display = 'none';
-    document.getElementById('current-password').value = '';
-    document.getElementById('new-password').value = '';
-    document.getElementById('confirm-password').value = '';
+    closePasswordModal();
 }
 
 // // TOTP双因素认证功能

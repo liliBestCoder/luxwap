@@ -112,7 +112,7 @@ shiro:
     # 首页地址
     indexUrl: /index
     # 验证码开关
-    captchaEnabled: true
+    captchaEnabled: false
     # 验证码类型 math 数字计算 char 字符验证
     captchaType: math
   cookie:
@@ -176,3 +176,12 @@ oauth:
     client-id: aWZHak1panVsczNRWTJ0ME1OTjU6MTpjaQ
     client-secret: CdBng_gKnYAh7w8q_KosOTtS-17LejmI-TYwOzzJUQI4walrRw
     redirect-uri: http://localhost:3000/api/auth/callback/x
+
+# Cloudflare Turnstile 人机验证与安全配置（特性开关）
+cloudflare:
+  turnstile:
+    enabled: false # 未申请域名时默认关闭，申请好域名后设置为 true
+    site-key: ""   # 申请域名后填入公钥
+    secret-key: "" # 申请域名后填入私钥
+    verify-url: https://challenges.cloudflare.com/turnstile/v0/siteverify
+

@@ -134,9 +134,11 @@ public class XrayDistributorsController extends BaseController
     @ResponseBody
     public AjaxResult saveSettings(@RequestParam Long id,
                                    @RequestParam Long commissionRate,
-                                   @RequestParam Long firstChargeBonus)
+                                   @RequestParam(value = "firstChargeBonus", required = false) Long firstChargeBonus,
+                                   @RequestParam(value = "bonusMonths", required = false) Long bonusMonths)
     {
-        xrayDistributorsService.saveSettings(id, commissionRate, firstChargeBonus);
+        Long bonus = bonusMonths != null ? bonusMonths : (firstChargeBonus != null ? firstChargeBonus : 0L);
+        xrayDistributorsService.saveSettings(id, commissionRate, bonus);
         return AjaxResult.success();
     }
 

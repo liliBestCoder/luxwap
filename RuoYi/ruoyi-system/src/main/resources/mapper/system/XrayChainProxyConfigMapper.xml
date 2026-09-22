@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.XrayChainProxyConfigMapper">
+
+    <resultMap type="XrayChainProxyConfig" id="XrayChainProxyConfigResult">
+        <result property="id"             column="id"              />
+        <result property="userId"         column="user_id"         />
+        <result property="isEnabled"      column="is_enabled"      />
+        <result property="activeNodeId"   column="active_node_id"  />
+        <result property="activeNodeKey"  column="active_node_key" />
+        <result property="exitLineId"     column="exit_line_id"    />
+        <result property="mode"           column="mode"            />
+        <result property="createTime"     column="create_time"     />
+        <result property="updateTime"     column="update_time"     />
+    </resultMap>
+
+    <select id="selectConfigByUserId" parameterType="Long" resultMap="XrayChainProxyConfigResult">
+        select id, user_id, is_enabled, active_node_id, active_node_key, exit_line_id, mode, create_time, update_time
+        from xray_chain_proxy_config
+        where user_id = #{userId}
+        limit 1
+    </select>
+
+    <insert id="insertConfig" parameterType="XrayChainProxyConfig" useGeneratedKeys="true" keyProperty="id">
+        insert into xray_chain_proxy_config (
+            user_id, is_enabled, active_node_id, active_node_key, exit_line_id, mode, create_time, update_time
+        ) values (
+            #{userId}, #{isEnabled}, #{activeNodeId}, #{activeNodeKey}, #{exitLineId}, #{mode}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <update id="updateConfig" parameterType="XrayChainProxyConfig">
+        update xray_chain_proxy_config
+        <set>
+            <if test="isEnabled != null">is_enabled = #{isEnabled},</if>
+            <if test="activeNodeId != null">active_node_id = #{activeNodeId},</if>
+            <if test="activeNodeKey != null">active_node_key = #{activeNodeKey},</if>
+            <if test="exitLineId != null">exit_line_id = #{exitLineId},</if>
+            <if test="mode != null and mode != ''">mode = #{mode},</if>
+            update_time = CURRENT_TIMESTAMP
+        </set>
+        where user_id = #{userId}
+    </update>
+
+</mapper>

@@ -95,6 +95,12 @@
             <artifactId>javax.servlet-api</artifactId>
         </dependency>
 
+        <!-- H2 内存/嵌入式数据库（支持本地开发与自动化测试） -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>
