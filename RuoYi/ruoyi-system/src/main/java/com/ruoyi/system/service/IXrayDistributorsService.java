@@ -70,4 +70,7 @@ public interface IXrayDistributorsService
     public List<XrayDistributorsConfig> selectXrayDistributorsConfigList(XrayDistributorsConfig xrayDistributorsConfig);
 
     public void saveSettings(Long id, Long commissionRate, Long firstChargeBonus);
+
+    /** 首充赠送流量(字节)。取代原先的赠送月数。 */
+    public void saveFirstChargeBonusTraffic(Long id, Long bonusTrafficBytes);
 }

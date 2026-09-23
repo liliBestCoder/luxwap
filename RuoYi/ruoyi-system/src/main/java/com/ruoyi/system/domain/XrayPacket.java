@@ -9,8 +9,13 @@ public class XrayPacket extends BaseEntity {
     private String name;
     private Integer durationMonths;
     private Integer bonusMonths;
+    /** 套餐流量(字节)，计费主口径 */
+    private Long trafficBytes;
+    /** 赠送流量(字节) */
+    private Long bonusTrafficBytes;
     private BigDecimal price;
     private BigDecimal pricePerMonth;
+    private BigDecimal pricePerGb;
     private String description;
     private Integer status;
     private Integer sortOrder;
@@ -31,6 +36,37 @@ public class XrayPacket extends BaseEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Long getTrafficBytes() {
+        return trafficBytes;
+    }
+
+    public void setTrafficBytes(Long trafficBytes) {
+        this.trafficBytes = trafficBytes;
+    }
+
+    public Long getBonusTrafficBytes() {
+        return bonusTrafficBytes;
+    }
+
+    public void setBonusTrafficBytes(Long bonusTrafficBytes) {
+        this.bonusTrafficBytes = bonusTrafficBytes;
+    }
+
+    public BigDecimal getPricePerGb() {
+        return pricePerGb;
+    }
+
+    public void setPricePerGb(BigDecimal pricePerGb) {
+        this.pricePerGb = pricePerGb;
+    }
+
+    /** 该套餐一次性发放的总流量(含赠送)。 */
+    public long totalTrafficBytes() {
+        long base = trafficBytes == null ? 0L : trafficBytes;
+        long bonus = bonusTrafficBytes == null ? 0L : bonusTrafficBytes;
+        return base + bonus;
     }
 
     public Integer getDurationMonths() {

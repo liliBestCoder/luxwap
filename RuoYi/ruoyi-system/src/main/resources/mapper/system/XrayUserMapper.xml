@@ -20,6 +20,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="providerAvatarUrl"    column="provider_avatar_url"    />
         <result property="status"    column="status"    />
         <result property="usedTraffic"    column="used_traffic"    />
+        <result property="totalTraffic"   column="total_traffic"   />
         <result property="expiration"    column="expiration"    />
         <result property="cumulativeMonths"    column="cumulative_months"    />
         <result property="inviteCode"    column="invite_code"    />
@@ -28,7 +29,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectXrayUserVo">
-        select id, uuid, username, nick, country, device_id, password, email, unique_email, provider, provider_user_id, provider_username, provider_avatar_url, status, used_traffic, expiration, cumulative_months, invite_code, type, created_at, updated_at from xray_user
+        select id, uuid, username, nick, country, device_id, password, email, unique_email, provider, provider_user_id, provider_username, provider_avatar_url, status, used_traffic, total_traffic, expiration, cumulative_months, invite_code, type, created_at, updated_at from xray_user
     </sql>
 
     <update id="updateTrafficByEmail">
@@ -54,6 +55,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="providerAvatarUrl != null  and providerAvatarUrl != ''"> and provider_avatar_url = #{providerAvatarUrl}</if>
             <if test="status != null "> and status = #{status}</if>
             <if test="usedTraffic != null "> and used_traffic = #{usedTraffic}</if>
+            <if test="totalTraffic != null "> and total_traffic = #{totalTraffic}</if>
             <if test="expiration != null "> and expiration = #{expiration}</if>
             <if test="cumulativeMonths != null "> and cumulative_months = #{cumulativeMonths}</if>
             <if test="type != null  and type != ''"> and `type` = #{type}</if>
@@ -102,6 +104,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="providerAvatarUrl != null">provider_avatar_url,</if>
             <if test="status != null">status,</if>
             <if test="usedTraffic != null">used_traffic,</if>
+            <if test="totalTraffic != null">total_traffic,</if>
             <if test="expiration != null">expiration,</if>
             <if test="cumulativeMonths != null">cumulative_months,</if>
             <if test="type != null">type,</if>
@@ -124,6 +127,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="providerAvatarUrl != null">#{providerAvatarUrl},</if>
             <if test="status != null">#{status},</if>
             <if test="usedTraffic != null">#{usedTraffic},</if>
+            <if test="totalTraffic != null">#{totalTraffic},</if>
             <if test="expiration != null">#{expiration},</if>
             <if test="cumulativeMonths != null">#{cumulativeMonths},</if>
             <if test="type != null">#{type},</if>
@@ -150,6 +154,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="providerAvatarUrl != null">provider_avatar_url = #{providerAvatarUrl},</if>
             <if test="status != null">status = #{status},</if>
             <if test="usedTraffic != null">used_traffic = #{usedTraffic},</if>
+            <if test="totalTraffic != null">total_traffic = #{totalTraffic},</if>
             <if test="expiration != null">expiration = #{expiration},</if>
             <if test="cumulativeMonths != null">cumulative_months = #{cumulativeMonths},</if>
             <if test="type != null">`type` = #{type},</if>

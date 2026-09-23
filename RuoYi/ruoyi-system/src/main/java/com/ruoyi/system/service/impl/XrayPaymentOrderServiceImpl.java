@@ -1,15 +1,18 @@
 package com.ruoyi.system.service.impl;
 
+import com.ruoyi.system.domain.XrayDistributorsConfig;
 import com.ruoyi.system.domain.XrayPacket;
 import com.ruoyi.system.domain.XrayPaymentNotifyLog;
 import com.ruoyi.system.domain.XrayPaymentOrder;
 import com.ruoyi.system.domain.XrayUser;
+import com.ruoyi.system.mapper.XrayDistributorsConfigMapper;
 import com.ruoyi.system.mapper.XrayPacketMapper;
 import com.ruoyi.system.mapper.XrayPaymentNotifyLogMapper;
 import com.ruoyi.system.mapper.XrayPaymentOrderMapper;
 import com.ruoyi.system.mapper.XrayPaymentSubmitTokenMapper;
 import com.ruoyi.system.mapper.XrayUserMapper;
 import com.ruoyi.system.service.IXrayPaymentOrderService;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -39,6 +42,8 @@ public class XrayPaymentOrderServiceImpl implements IXrayPaymentOrderService {
     private XrayPacketMapper packetMapper;
     @Resource
     private XrayUserMapper userMapper;
+    @Resource
+    private XrayDistributorsConfigMapper distributorsConfigMapper;
 
     @Override
     public void createOrder(XrayPaymentOrder order) {
@@ -119,22 +124,48 @@ public class XrayPaymentOrderServiceImpl implements IXrayPaymentOrderService {
             throw new IllegalStateException("order packet or user does not exist");
         }
 
-        int months = Optional.ofNullable(packet.getDurationMonths()).orElse(0)
-                + Optional.ofNullable(packet.getBonusMonths()).orElse(0);
-        if (months <= 0) {
-            throw new IllegalStateException("packet duration is invalid");
+        long grantedTraffic = packet.totalTrafficBytes();
+        if (grantedTraffic <= 0L) {
+            throw new IllegalStateException("packet traffic is invalid");
         }
 
-        Date now = new Date();
-        Date currentExpiration = user.getExpiration();
-        Date base = currentExpiration != null && currentExpiration.after(now) ? currentExpiration : now;
-        LocalDateTime newExpiration = LocalDateTime.ofInstant(base.toInstant(), ZoneId.systemDefault()).plusMonths(months);
+        grantedTraffic += firstChargeBonusTraffic(user);
+
+        // 流量是累加配额：老配额没用完的部分继续保留，充值只往上叠加。
+        long newTotal = Optional.ofNullable(user.getTotalTraffic()).orElse(0L) + grantedTraffic;
 
         XrayUser update = new XrayUser();
         update.setId(user.getId());
-        update.setExpiration(Date.from(newExpiration.atZone(ZoneId.systemDefault()).toInstant()));
-        update.setCumulativeMonths(Optional.ofNullable(user.getCumulativeMonths()).orElse(0) + months);
+        update.setTotalTraffic(newTotal);
         userMapper.updateXrayUser(update);
+    }
+
+    /**
+     * 经销商政策：带邀请码注册的用户，首次充值成功额外赠送一份流量。
+     * 只在该用户的第一笔成功订单上发放（此时订单刚被标记成功，成功单数正好是 1）。
+     */
+    private long firstChargeBonusTraffic(XrayUser user) {
+        if (StringUtils.isBlank(user.getInviteCode())) {
+            return 0L;
+        }
+
+        XrayPaymentOrder successQuery = new XrayPaymentOrder();
+        successQuery.setUserId(user.getId());
+        successQuery.setStatus("SUCCESS");
+        if (orderMapper.selectXrayPaymentOrderList(successQuery).size() != 1) {
+            return 0L;
+        }
+
+        List<XrayDistributorsConfig> configs =
+                distributorsConfigMapper.selectXrayDistributorsConfigList(new XrayDistributorsConfig());
+        if (configs == null || configs.isEmpty()) {
+            return 0L;
+        }
+        long bonus = Optional.ofNullable(configs.get(0).getFirstChargeBonusTraffic()).orElse(0L);
+        if (bonus > 0L) {
+            log.info("first charge bonus traffic granted userId={} bytes={}", user.getId(), bonus);
+        }
+        return Math.max(0L, bonus);
     }
 
     @Override

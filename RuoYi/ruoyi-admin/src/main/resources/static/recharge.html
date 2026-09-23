@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>购买套餐</title>
+  <style>
+    :root {
+      --primary: #286AFC;
+      --text-primary: #1B1B1B;
+      --text-secondary: #666666;
+      --text-light: #B2B2B2;
+      --text-muted: #888888;
+      --border: #DFDFDF;
+      --border-light: #EAEAEA;
+      --radius-md: 15px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #FFFFFF;
+      color: var(--text-primary);
+      font-family: Inter, "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 20px 35px;
+    }
+
+    .page-title { font-size: 22px; font-weight: 700; margin: 0; }
+    .page-sub { font-size: 14px; color: var(--text-secondary); margin: 6px 0 0; white-space: pre-line; }
+    .page-hint { font-size: 12px; color: var(--text-light); margin: 4px 0 0; }
+
+    .plans { display: flex; gap: 14px; margin-top: 24px; }
+
+    .plan-card {
+      flex: 1;
+      padding: 16px;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+    }
+    .plan-card.selected {
+      background: #F4F7FF;
+      border: 2px solid var(--primary);
+      padding: 15px;
+    }
+
+    .plan-head { display: flex; align-items: center; }
+    .plan-title { font-size: 16px; font-weight: 700; }
+    .plan-badge {
+      margin-left: auto;
+      padding: 2px 6px;
+      background: #FFF0F0;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #FF4D4F;
+    }
+
+    .plan-price { display: flex; align-items: baseline; margin-top: 10px; }
+    .plan-currency { font-size: 14px; font-weight: 700; color: var(--primary); }
+    .plan-amount { font-size: 24px; font-weight: 800; color: var(--primary); margin-left: 4px; }
+    .plan-avg {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-left: 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .plan-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.4; margin-top: 8px; }
+
+    .section-title { font-size: 16px; font-weight: 600; margin: 28px 0 12px; }
+
+    .pay-list {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .pay-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: 100%;
+      font-family: inherit;
+    }
+    .pay-row + .pay-row { border-top: 1px solid var(--border-light); }
+    .pay-icon { width: 20px; height: 20px; object-fit: contain; }
+    .pay-name { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-left: 12px; text-align: left; flex: 1; }
+    .pay-radio {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid #CCCCCC; flex-shrink: 0;
+    }
+    .pay-row.selected .pay-radio { border-color: var(--primary); box-shadow: inset 0 0 0 3px var(--primary); }
+
+    .summary {
+      display: flex;
+      align-items: center;
+      margin-top: 24px;
+      padding: 18px;
+      background: #F9FAFB;
+      border: 1px solid #EBEBED;
+      border-radius: var(--radius-md);
+    }
+    .summary-total { font-size: 16px; font-weight: 700; }
+    .summary-avg { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .buy-button {
+      margin-left: auto;
+      padding: 14px 28px;
+      background: var(--primary);
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .buy-button:disabled { opacity: .5; cursor: not-allowed; }
+
+    .status { margin-top: 16px; padding: 10px 14px; border-radius: 8px; font-size: 13px; display: none; }
+    .status.success { display: block; background: #F0F7FF; color: #286AFC; }
+    .status.error { display: block; background: #FFF1F0; color: #FF4D4F; }
+
+    .placeholder { padding: 40px 0; text-align: center; color: var(--text-light); font-size: 13px; }
+
+    .traffic-balance {
+      margin-top: 12px;
+      padding: 10px 14px;
+      display: inline-block;
+      background: #F4F7FF;
+      border: 1px solid #DCE7FD;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--primary);
+    }
+
+
+    .qr-mask {
+      display: none;
+      position: fixed; inset: 0; z-index: 40;
+      background: rgba(0,0,0,.35);
+      align-items: center; justify-content: center;
+    }
+    .qr-mask.open { display: flex; }
+    .qr-box { background: #fff; border-radius: var(--radius-md); padding: 24px; text-align: center; width: 320px; }
+    .qr-box img { width: 240px; height: 240px; }
+    .qr-status { font-size: 13px; color: var(--text-secondary); margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h1 class="page-title">购买套餐</h1>
+  <p class="page-sub">按流量付费，用多少买多少
+即刻到账，立即享受全部会员权益</p>
+  <p class="page-hint">选择适合您的流量套餐，流量用完为止，不限使用时长</p>
+  <div class="traffic-balance" id="trafficBalance">正在加载流量余额...</div>
+
+  <input type="hidden" id="submitToken" value="__PAY_SUBMIT_TOKEN__" />
+
+  <div class="plans" id="planList">
+    <div class="placeholder">正在加载套餐...</div>
+  </div>
+
+  <h2 class="section-title">付款方式</h2>
+  <div class="pay-list" id="paymentList">
+    <div class="placeholder">正在加载付款方式...</div>
+  </div>
+
+  <div class="summary">
+    <div>
+      <div class="summary-total" id="summaryTotal">合计: --</div>
+      <div class="summary-avg" id="summaryAvg">单价 --</div>
+    </div>
+    <button class="buy-button" id="buyButton" disabled>购买 &gt;</button>
+  </div>
+
+  <div class="status" id="status"></div>
+  <div id="paymentSubmitHost" style="display:none"></div>
+
+  <div class="qr-mask" id="qrModal">
+    <div class="qr-box">
+      <img id="qrImage" alt="支付二维码" />
+      <div class="qr-status" id="qrOrderNo"></div>
+      <div class="qr-status" id="qrStatus"></div>
+      <button class="buy-button" id="qrDoneButton" style="margin-top:16px">关闭</button>
+    </div>
+  </div>
+
+  <script>
+    const iconMap = {
+      alipay: "https://cdn.simpleicons.org/alipay",
+      wechat: "https://cdn.simpleicons.org/wechat",
+      wxpay: "https://cdn.simpleicons.org/wechat",
+      stripe: "https://cdn.simpleicons.org/stripe",
+      paypal: "https://cdn.simpleicons.org/paypal",
+      usdc: "https://cdn.simpleicons.org/circle",
+    };
+
+    let packets = [];
+    let methods = [];
+    let selectedPacketId = null;
+    let selectedPayType = null;
+    let pollTimer = null;
+
+    const BYTES_PER_GB = 1073741824;
+
+    function money(value) {
+      const num = Number(value || 0);
+      return "US$" + num.toFixed(2);
+    }
+
+    function toGb(bytes) {
+      return Math.round((Number(bytes || 0) / BYTES_PER_GB) * 100) / 100;
+    }
+
+    function formatTraffic(bytes) {
+      const gb = Number(bytes || 0) / BYTES_PER_GB;
+      if (gb >= 1) return gb.toFixed(2) + " GB";
+      return (Number(bytes || 0) / (1024 * 1024)).toFixed(1) + " MB";
+    }
+
+    function showStatus(message, kind) {
+      const el = document.getElementById("status");
+      el.textContent = message;
+      el.className = "status " + kind;
+    }
+
+    function selectedPacket() {
+      return packets.find((p) => String(p.id) === String(selectedPacketId)) || null;
+    }
+
+    function renderPlans() {
+      const root = document.getElementById("planList");
+      if (packets.length === 0) {
+        root.innerHTML = '<div class="placeholder">暂无可购买套餐</div>';
+        return;
+      }
+      root.innerHTML = packets.map((packet) => {
+        const baseGb = toGb(packet.trafficBytes);
+        const bonusGb = toGb(packet.bonusTrafficBytes);
+        const title = packet.name || (baseGb + "GB");
+        const badge = bonusGb > 0 ? '<span class="plan-badge">赠送' + bonusGb + 'GB</span>' : "";
+        const selected = String(packet.id) === String(selectedPacketId) ? " selected" : "";
+        const desc = packet.description || "流量用完为止，不限使用时长";
+        return '<button type="button" class="plan-card' + selected + '" data-packet-id="' + packet.id + '">'
+          + '<div class="plan-head"><span class="plan-title">' + title + '</span>' + badge + '</div>'
+          + '<div class="plan-price"><span class="plan-currency">US$</span>'
+          + '<span class="plan-amount">' + Number(packet.price || 0).toFixed(2) + '</span>'
+          + '<span class="plan-avg">US$ ' + Number(packet.pricePerGb || 0).toFixed(2) + '/GB</span></div>'
+          + '<div class="plan-desc">' + desc + '</div>'
+          + '</button>';
+      }).join("");
+
+      root.querySelectorAll(".plan-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          selectedPacketId = card.dataset.packetId;
+          renderPlans();
+          renderSummary();
+        });
+      });
+    }
+
+    function renderPayments() {
+      const root = document.getElementById("paymentList");
+      if (methods.length === 0) {
+        root.innerHTML = '<div class="placeholder">暂无启用的付款方式</div>';
+        return;
+      }
+      root.innerHTML = methods.map((method) => {
+        const icon = iconMap[method.type] || "https://cdn.simpleicons.org/visa";
+        const selected = method.type === selectedPayType ? " selected" : "";
+        return '<button type="button" class="pay-row' + selected + '" data-pay-type="' + method.type + '">'
+          + '<img class="pay-icon" src="' + icon + '" alt="" />'
+          + '<span class="pay-name">' + (method.name || method.type) + '</span>'
+          + '<span class="pay-radio"></span>'
+          + '</button>';
+      }).join("");
+
+      root.querySelectorAll(".pay-row").forEach((row) => {
+        row.addEventListener("click", () => {
+          selectedPayType = row.dataset.payType;
+          renderPayments();
+          updateBuyState();
+        });
+      });
+      updateBuyState();
+    }
+
+    function renderSummary() {
+      const packet = selectedPacket();
+      if (!packet) {
+        document.getElementById("summaryTotal").textContent = "合计: --";
+        document.getElementById("summaryAvg").textContent = "月均 --";
+        return;
+      }
+      const totalGb = toGb(packet.trafficBytes) + toGb(packet.bonusTrafficBytes);
+      document.getElementById("summaryTotal").textContent =
+        "合计" + totalGb + "GB: " + money(packet.price);
+      document.getElementById("summaryAvg").textContent =
+        "US$ " + Number(packet.pricePerGb || 0).toFixed(2) + "/GB";
+      updateBuyState();
+    }
+
+    function updateBuyState() {
+      document.getElementById("buyButton").disabled = !selectedPacketId || !selectedPayType;
+    }
+
+    function stopPolling() {
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    }
+
+    async function checkOrderStatus(orderNo) {
+      const res = await fetch("/api/client/payment/orderStatus?orderNo=" + encodeURIComponent(orderNo), { credentials: "include" });
+      const payload = await res.json();
+      if (payload.code !== 0) return;
+      if (payload.status === "SUCCESS") {
+        stopPolling();
+        document.getElementById("qrStatus").textContent = "支付成功，流量已到账";
+        showStatus("支付成功，流量已到账。", "success");
+        // 到账后立刻把剩余流量和账单刷出来，不让用户自己猜有没有生效。
+        await refreshTrafficBalance();
+      } else if (payload.status === "FAILED" || payload.status === "CLOSED") {
+        stopPolling();
+        document.getElementById("qrStatus").textContent = "订单已关闭，请刷新页面后重新下单";
+        showStatus("订单已关闭，请刷新页面后重新下单。", "error");
+      } else {
+        document.getElementById("qrStatus").textContent =
+          "等待支付中，最近检查：" + new Date().toLocaleTimeString();
+      }
+    }
+
+    function openQrModal(orderNo, qrCode) {
+      document.getElementById("qrOrderNo").textContent = "订单号：" + (orderNo || "");
+      document.getElementById("qrImage").src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=" + encodeURIComponent(qrCode);
+      document.getElementById("qrModal").classList.add("open");
+      stopPolling();
+      pollTimer = setInterval(() => checkOrderStatus(orderNo).catch(() => {}), 2000);
+      checkOrderStatus(orderNo).catch(() => {});
+    }
+
+    function submitPayment(payload) {
+      if (payload.qrCode) {
+        showStatus("订单已创建，请扫码支付。", "success");
+        openQrModal(payload.orderNo, payload.qrCode);
+        return true;
+      }
+      if (payload.paymentForm) {
+        showStatus("订单已创建，正在跳转支付宝...", "success");
+        const host = document.getElementById("paymentSubmitHost");
+        host.innerHTML = payload.paymentForm;
+        const form = host.querySelector("form");
+        if (!form) throw new Error("支付宝支付表单无效");
+        form.submit();
+        return true;
+      }
+      if (payload.paymentUrl) {
+        showStatus("订单已创建，正在跳转支付网关...", "success");
+        window.location.href = payload.paymentUrl;
+        return true;
+      }
+      return false;
+    }
+
+    async function createOrder() {
+      if (!selectedPacketId || !selectedPayType) return;
+      const button = document.getElementById("buyButton");
+      button.disabled = true;
+      try {
+        const form = new URLSearchParams();
+        form.set("packetId", selectedPacketId);
+        form.set("type", selectedPayType);
+        form.set("submitToken", document.getElementById("submitToken").value);
+        const res = await fetch("/api/client/payment/createOrder", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+          body: form.toString(),
+        });
+        const payload = await res.json();
+        if (payload.code !== 0) {
+          showStatus(payload.msg || "创建订单失败", "error");
+          return;
+        }
+        if (!submitPayment(payload)) {
+          showStatus("订单已创建：" + (payload.orderNo || "") + "。该支付方式还未接入跳转。", "success");
+        }
+      } catch (error) {
+        showStatus(error.message || "网络错误，请稍后重试", "error");
+      } finally {
+        button.disabled = false;
+        updateBuyState();
+      }
+    }
+
+    async function refreshTrafficBalance() {
+      try {
+        const res = await fetch("/api/client/user-info", { credentials: "include" });
+        const payload = await res.json();
+        if (payload.code !== 0 || !payload.data) return;
+        const used = payload.data.usedTraffic || 0;
+        const remaining = payload.data.remainingTraffic || 0;
+        document.getElementById("trafficBalance").textContent =
+          "剩余流量 " + formatTraffic(remaining) + " ／ 已用 " + formatTraffic(used);
+      } catch (_) {
+        // 余额展示失败不影响下单
+      }
+    }
+
+    /**
+     * 支付宝网页支付会跳走再跳回，回来时订单可能还在处理中。
+     * 这里接着把未完成的订单轮询完，用户不用自己刷新页面确认到账。
+     * 账单本身在客户端的「交易记录」页展示，这个页面只管支付。
+     */
+    async function resumePendingOrder() {
+      try {
+        const res = await fetch("/api/client/payment/orders", { credentials: "include" });
+        const payload = await res.json();
+        if (payload.code !== 0) return;
+        const pending = (payload.data || []).find(
+          (row) => row.status === "PENDING" || row.status === "PROCESSING");
+        if (pending && !pollTimer) {
+          showStatus("检测到进行中的订单，正在确认支付结果...", "success");
+          pollTimer = setInterval(() => checkOrderStatus(pending.orderNo).catch(() => {}), 2000);
+        }
+      } catch (_) {
+        // 续单检测失败不影响正常下单
+      }
+    }
+
+    async function loadConfig() {
+      const res = await fetch("/api/client/payment/config", { credentials: "include" });
+      if (res.status === 401) {
+        showStatus("登录状态已失效，请回到客户端重新打开续费页面。", "error");
+        document.getElementById("planList").innerHTML = "";
+        document.getElementById("paymentList").innerHTML = "";
+        return;
+      }
+      const payload = await res.json();
+      if (payload.code !== 0) throw new Error(payload.msg || "加载配置失败");
+      packets = payload.data.packets || [];
+      methods = payload.data.paymentMethods || [];
+      selectedPacketId = packets.length > 0 ? packets[0].id : null;
+      selectedPayType = methods.length > 0 ? methods[0].type : null;
+      renderPlans();
+      renderPayments();
+      renderSummary();
+    }
+
+    document.getElementById("buyButton").addEventListener("click", createOrder);
+    document.getElementById("qrDoneButton").addEventListener("click", () => {
+      document.getElementById("qrModal").classList.remove("open");
+      stopPolling();
+    });
+    loadConfig().catch((error) => showStatus(error.message || "加载失败", "error"));
+    refreshTrafficBalance();
+    resumePendingOrder();
+  </script>
+</body>
+</html>

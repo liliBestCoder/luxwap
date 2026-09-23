@@ -73,6 +73,9 @@ public class XrayUser extends BaseEntity
     @Excel(name = "当月使用流量，单位为字节")
     private Long usedTraffic;
 
+    /** 累计流量配额(字节)。used_traffic 达到该值即停服，取代原先的到期日判断。 */
+    private Long totalTraffic;
+
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @Excel(name = "有效期", width = 30, dateFormat = "yyyy-MM-dd")
     private Date expiration;
@@ -236,6 +239,26 @@ public class XrayUser extends BaseEntity
 
     public void setUsedTraffic(Long usedTraffic) {
         this.usedTraffic = usedTraffic;
+    }
+
+    public Long getTotalTraffic() {
+        return totalTraffic;
+    }
+
+    public void setTotalTraffic(Long totalTraffic) {
+        this.totalTraffic = totalTraffic;
+    }
+
+    /** 剩余可用流量(字节)，不会为负。 */
+    public long remainingTraffic() {
+        long total = totalTraffic == null ? 0L : totalTraffic;
+        long used = usedTraffic == null ? 0L : usedTraffic;
+        return Math.max(0L, total - used);
+    }
+
+    /** 流量是否已用尽——取代到期日，作为唯一的停服判断。 */
+    public boolean isTrafficExhausted() {
+        return remainingTraffic() <= 0L;
     }
 
     public Date getExpiration() {

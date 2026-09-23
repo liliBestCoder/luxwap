@@ -109,7 +109,8 @@ public class XrayPartnerWebSocketHandler extends TextWebSocketHandler implements
             UserData userData = new UserData();
             userData.setUser_id(user.getUuid());
             userData.setEmail(user.getUniqueEmail());
-            userData.setOp(user.getExpiration().before(new Date()) ? "remove" : "add");
+            // 准入以流量配额为准：用尽即从节点摘除，不再看到期日。
+            userData.setOp(user.isTrafficExhausted() ? "remove" : "add");
             return userData;
         }
 

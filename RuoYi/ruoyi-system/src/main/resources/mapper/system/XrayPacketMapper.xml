@@ -10,8 +10,11 @@
         name,
         duration_months AS durationMonths,
         bonus_months AS bonusMonths,
+        traffic_bytes AS trafficBytes,
+        bonus_traffic_bytes AS bonusTrafficBytes,
         price,
         price_per_month AS pricePerMonth,
+        price_per_gb AS pricePerGb,
         description,
         status,
         sort_order AS sortOrder,
@@ -39,8 +42,8 @@
     </select>
 
     <insert id="insertPacket" parameterType="com.ruoyi.system.domain.XrayPacket" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO xray_packet (name, duration_months, bonus_months, price, price_per_month, description, status, sort_order, created_at, updated_at)
-        VALUES (#{name}, #{durationMonths}, #{bonusMonths}, #{price}, #{pricePerMonth}, #{description}, #{status}, #{sortOrder}, NOW(), NOW())
+        INSERT INTO xray_packet (name, duration_months, bonus_months, traffic_bytes, bonus_traffic_bytes, price, price_per_month, price_per_gb, description, status, sort_order, created_at, updated_at)
+        VALUES (#{name}, #{durationMonths}, #{bonusMonths}, #{trafficBytes}, #{bonusTrafficBytes}, #{price}, #{pricePerMonth}, #{pricePerGb}, #{description}, #{status}, #{sortOrder}, NOW(), NOW())
     </insert>
 
     <update id="updatePacket" parameterType="com.ruoyi.system.domain.XrayPacket">
@@ -48,8 +51,11 @@
         SET name = #{name},
             duration_months = #{durationMonths},
             bonus_months = #{bonusMonths},
+            traffic_bytes = #{trafficBytes},
+            bonus_traffic_bytes = #{bonusTrafficBytes},
             price = #{price},
             price_per_month = #{pricePerMonth},
+            price_per_gb = #{pricePerGb},
             description = #{description},
             status = #{status},
             sort_order = #{sortOrder},

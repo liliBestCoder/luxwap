@@ -18,6 +18,8 @@ public class XrayDistributorsConfig extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
 
+    private static final long BYTES_PER_GB = 1073741824L;
+
     /** 配置ID */
     private Long id;
 
@@ -28,6 +30,10 @@ public class XrayDistributorsConfig extends BaseEntity
     /** 首充返佣（%） */
     @Excel(name = "首充返佣")
     private Long firstChargeBonus;
+
+    /** 首充赠送流量（字节） */
+    @Excel(name = "首充赠送流量")
+    private Long firstChargeBonusTraffic;
 
     /** 创建时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
@@ -65,12 +71,21 @@ public class XrayDistributorsConfig extends BaseEntity
         this.firstChargeBonus = firstChargeBonus;
     }
 
-    public Long getBonusMonths() {
-        return firstChargeBonus;
+    public Long getFirstChargeBonusTraffic() {
+        return firstChargeBonusTraffic;
     }
 
-    public void setBonusMonths(Long bonusMonths) {
-        this.firstChargeBonus = bonusMonths;
+    public void setFirstChargeBonusTraffic(Long firstChargeBonusTraffic) {
+        this.firstChargeBonusTraffic = firstChargeBonusTraffic;
+    }
+
+    /** 首充赠送流量按 GB 对外展示与配置。 */
+    public Long getBonusTrafficGb() {
+        return firstChargeBonusTraffic == null ? null : firstChargeBonusTraffic / BYTES_PER_GB;
+    }
+
+    public void setBonusTrafficGb(Long bonusTrafficGb) {
+        this.firstChargeBonusTraffic = bonusTrafficGb == null ? null : bonusTrafficGb * BYTES_PER_GB;
     }
 
     public Date getCreatedAt() {

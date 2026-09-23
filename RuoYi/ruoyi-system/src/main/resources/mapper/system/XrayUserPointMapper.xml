@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ruoyi.system.mapper.XrayUserPointMapper">
+
+    <sql id="AccountColumns">
+        id,
+        user_id AS userId,
+        balance,
+        total_earned AS totalEarned,
+        settled_traffic AS settledTraffic,
+        created_at AS createdAt,
+        updated_at AS updatedAt
+    </sql>
+
+    <select id="selectByUserId" resultType="com.ruoyi.system.domain.XrayUserPoint">
+        SELECT <include refid="AccountColumns"/>
+        FROM xray_user_point
+        WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insertAccount" parameterType="com.ruoyi.system.domain.XrayUserPoint"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO xray_user_point (user_id, balance, total_earned, settled_traffic, created_at, updated_at)
+        VALUES (#{userId}, #{balance}, #{totalEarned}, #{settledTraffic}, NOW(), NOW())
+        ON DUPLICATE KEY UPDATE updated_at = NOW()
+    </insert>
+
+    <update id="settle">
+        UPDATE xray_user_point
+        SET balance         = balance + #{earned},
+            total_earned    = total_earned + #{earned},
+            settled_traffic = #{newSettledTraffic},
+            updated_at      = NOW()
+        WHERE user_id = #{userId}
+          AND settled_traffic = #{expectSettledTraffic}
+    </update>
+
+    <update id="deduct">
+        UPDATE xray_user_point
+        SET balance    = balance - #{amount},
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+          AND balance &gt;= #{amount}
+    </update>
+
+    <insert id="insertRecord" parameterType="com.ruoyi.system.domain.XrayPointRecord"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO xray_point_record (user_id, change_amount, balance_after, type, remark, created_at)
+        VALUES (#{userId}, #{changeAmount}, #{balanceAfter}, #{type}, #{remark}, NOW())
+    </insert>
+
+    <select id="selectRecordsByUserId" resultType="com.ruoyi.system.domain.XrayPointRecord">
+        SELECT id,
+               user_id AS userId,
+               change_amount AS changeAmount,
+               balance_after AS balanceAfter,
+               type,
+               remark,
+               created_at AS createdAt
+        FROM xray_point_record
+        WHERE user_id = #{userId}
+        ORDER BY id DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectUserIdsPendingSettle" resultType="java.lang.Long">
+        SELECT u.id
+        FROM xray_user u
+        LEFT JOIN xray_user_point p ON p.user_id = u.id
+        WHERE COALESCE(u.used_traffic, 0) &gt; COALESCE(p.settled_traffic, 0)
+        ORDER BY u.id
+        LIMIT #{limit}
+    </select>
+
+</mapper>

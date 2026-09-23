@@ -35,6 +35,9 @@ import java.util.UUID;
 @Service
 public class XrayUserServiceImpl implements IXrayUserService 
 {
+    /** 注册赠送的试用流量：3GB。 */
+    private static final long TRIAL_TRAFFIC_BYTES = 3L * 1073741824L;
+
     @Autowired
     private XrayUserMapper xrayUserMapper;
     @Autowired
@@ -173,7 +176,9 @@ public class XrayUserServiceImpl implements IXrayUserService
             user.setType("inner");
         }
 
-        //首次注册 送3天的免费试用
+        //首次注册 送试用流量。计费已改为按流量，配额为 0 的新用户会被直接判定为停服，
+        //所以这里必须发流量，不能再只发到期日。
+        user.setTotalTraffic(TRIAL_TRAFFIC_BYTES);
         user.setExpiration(Date.from(LocalDateTime.now().plusDays(3).atZone(ZoneId.systemDefault()).toInstant()));
         xrayUserMapper.insertXrayUser(user);
         //注册追加user

@@ -9,20 +9,21 @@
         <id column="id" property="id" />
         <result column="commission_rate" property="commissionRate" />
         <result column="first_charge_bonus" property="firstChargeBonus" />
+        <result column="first_charge_bonus_traffic" property="firstChargeBonusTraffic" />
         <result column="created_at" property="createdAt" />
         <result column="updated_at" property="updatedAt" />
     </resultMap>
 
     <!-- 查询单条 -->
     <select id="selectXrayDistributorsConfigById" resultMap="BaseResultMap" parameterType="java.lang.Long">
-        SELECT id, commission_rate, first_charge_bonus, created_at, updated_at
+        SELECT id, commission_rate, first_charge_bonus, first_charge_bonus_traffic, created_at, updated_at
         FROM xray_distributors_config
         WHERE id = #{id}
     </select>
 
     <!-- 查询列表 -->
     <select id="selectXrayDistributorsConfigList" resultMap="BaseResultMap" parameterType="com.ruoyi.system.domain.XrayDistributorsConfig">
-        SELECT id, commission_rate, first_charge_bonus, created_at, updated_at
+        SELECT id, commission_rate, first_charge_bonus, first_charge_bonus_traffic, created_at, updated_at
         FROM xray_distributors_config
         <where>
             <if test="commissionRate != null">
@@ -37,9 +38,9 @@
     <!-- 新增 -->
     <insert id="insertXrayDistributorsConfig" parameterType="com.ruoyi.system.domain.XrayDistributorsConfig" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO xray_distributors_config
-            (commission_rate, first_charge_bonus, created_at, updated_at)
+            (commission_rate, first_charge_bonus, first_charge_bonus_traffic, created_at, updated_at)
         VALUES
-            (#{commissionRate}, #{firstChargeBonus}, #{createdAt}, #{updatedAt})
+            (#{commissionRate}, #{firstChargeBonus}, #{firstChargeBonusTraffic}, #{createdAt}, #{updatedAt})
     </insert>
 
     <!-- 修改 -->
@@ -51,6 +52,9 @@
             </if>
             <if test="firstChargeBonus != null">
                 first_charge_bonus = #{firstChargeBonus},
+            </if>
+            <if test="firstChargeBonusTraffic != null">
+                first_charge_bonus_traffic = #{firstChargeBonusTraffic},
             </if>
         </set>
         WHERE id = #{id}

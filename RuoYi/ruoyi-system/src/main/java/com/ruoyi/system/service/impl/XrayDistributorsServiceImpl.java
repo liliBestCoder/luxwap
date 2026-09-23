@@ -162,4 +162,12 @@ public class XrayDistributorsServiceImpl implements IXrayDistributorsService
         update.setFirstChargeBonus(firstChargeBonus);
         xrayDistributorsConfigMapper.updateXrayDistributorsConfig(update);
     }
+
+    @Override
+    public void saveFirstChargeBonusTraffic(Long id, Long bonusTrafficBytes){
+        XrayDistributorsConfig update = new XrayDistributorsConfig();
+        update.setId(id);
+        update.setFirstChargeBonusTraffic(bonusTrafficBytes);
+        xrayDistributorsConfigMapper.updateXrayDistributorsConfig(update);
+    }
 }

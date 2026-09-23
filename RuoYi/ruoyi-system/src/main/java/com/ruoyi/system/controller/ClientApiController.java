@@ -194,6 +194,10 @@ public class ClientApiController extends BaseController {
 
     private IXrayPaymentOrderService paymentOrderService;
 
+    @Autowired
+
+    private IXrayUserPointService userPointService;
+
 
 
     @PostMapping("/register")
@@ -316,6 +320,10 @@ public class ClientApiController extends BaseController {
 
         private Long usedTraffic;
 
+        private Long totalTraffic;
+
+        private Long remainingTraffic;
+
         @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
 
         private Date expiration;
@@ -424,6 +432,30 @@ public class ClientApiController extends BaseController {
 
         }
 
+        public Long getTotalTraffic() {
+
+            return totalTraffic;
+
+        }
+
+        public void setTotalTraffic(Long totalTraffic) {
+
+            this.totalTraffic = totalTraffic;
+
+        }
+
+        public Long getRemainingTraffic() {
+
+            return remainingTraffic;
+
+        }
+
+        public void setRemainingTraffic(Long remainingTraffic) {
+
+            this.remainingTraffic = remainingTraffic;
+
+        }
+
 
 
         public Date getExpiration() {
@@ -506,7 +538,91 @@ public class ClientApiController extends BaseController {
 
         BeanUtils.copyProperties(xrayUser, xrayUserResp);
 
+        xrayUserResp.setRemainingTraffic(xrayUser.remainingTraffic());
+
         return AjaxResult.success(xrayUserResp);
+
+    }
+
+
+
+    /**
+     * 积分总览：余额、累计获得、发放与兑换比例。
+     * 顺手结算一次，保证客户端拿到的是最新用量对应的积分。
+     */
+    @GetMapping("/points")
+
+    @ResponseBody
+
+    public AjaxResult points() {
+
+        Long userId = XrayThreadLocal.getUid();
+
+        XrayUserPoint account = userPointService.settleTrafficPoints(userId);
+
+        XrayUser user = xrayUserService.selectXrayUserById(userId);
+
+        Map<String, Object> data = new HashMap<>();
+
+        data.put("balance", account.getBalance());
+
+        data.put("totalEarned", account.getTotalEarned());
+
+        data.put("pointsPerGb", userPointService.getPointsPerGb());
+
+        data.put("exchangePointsPerGb", userPointService.getPointsPerGbExchange());
+
+        data.put("usedTraffic", user == null ? 0L : user.getUsedTraffic());
+
+        data.put("remainingTraffic", user == null ? 0L : user.remainingTraffic());
+
+        return AjaxResult.success(data);
+
+    }
+
+
+
+    @GetMapping("/points/records")
+
+    @ResponseBody
+
+    public AjaxResult pointRecords(@RequestParam(value = "limit", required = false, defaultValue = "20") Integer limit) {
+
+        Long userId = XrayThreadLocal.getUid();
+
+        return AjaxResult.success(userPointService.listRecords(userId, limit));
+
+    }
+
+
+
+    @PostMapping("/points/exchange")
+
+    @ResponseBody
+
+    public AjaxResult exchangePoints(@RequestParam("points") Long points) {
+
+        Long userId = XrayThreadLocal.getUid();
+
+        try {
+
+            long grantedBytes = userPointService.exchangeForTraffic(userId, points == null ? 0L : points);
+
+            Map<String, Object> data = new HashMap<>();
+
+            data.put("grantedTraffic", grantedBytes);
+
+            XrayUser user = xrayUserService.selectXrayUserById(userId);
+
+            data.put("remainingTraffic", user == null ? 0L : user.remainingTraffic());
+
+            return AjaxResult.success(data);
+
+        } catch (IllegalArgumentException e) {
+
+            return AjaxResult.error(e.getMessage());
+
+        }
 
     }
 
@@ -1087,9 +1203,11 @@ public class ClientApiController extends BaseController {
 
                     row.put("packetName", packet == null ? "-" : packet.getName());
 
-                    row.put("durationMonths", packet == null ? null : packet.getDurationMonths());
+                    row.put("trafficBytes", packet == null ? null : packet.getTrafficBytes());
 
-                    row.put("bonusMonths", packet == null ? null : packet.getBonusMonths());
+                    row.put("bonusTrafficBytes", packet == null ? null : packet.getBonusTrafficBytes());
+
+                    row.put("totalTrafficBytes", packet == null ? null : packet.totalTrafficBytes());
 
                     row.put("amount", order.getAmount());
 

@@ -761,18 +761,18 @@ function startActivity() {
 
 function saveDealerPolicy() {
   const commission = Number(document.getElementById("dealer-commission").value || 0);
-  const bonusMonths = Math.max(0, parseInt(document.getElementById("dealer-discount").value || 0, 10));
+  const bonusTrafficGb = Math.max(0, parseInt(document.getElementById("dealer-discount").value || 0, 10));
   fetch(`/system/distributors/save-settings`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     credentials: 'include',
-    body: `id=${window.distributorsConfig.id}&commissionRate=${commission}&firstChargeBonus=${bonusMonths}&bonusMonths=${bonusMonths}`,
+    body: `id=${window.distributorsConfig.id}&commissionRate=${commission}&bonusTrafficGb=${bonusTrafficGb}`,
   }).then((response) => response.json())
     .then((data) => {
       if (data.code === 0) {
-        toast(`已保存经销商政策（赠送月数方案）`, "success");
+        toast(`已保存经销商政策（赠送流量方案）`, "success");
         searchDistributorsSettings();
       } else {
         toast(data.msg, 'error');
@@ -781,7 +781,7 @@ function saveDealerPolicy() {
 }
 function resetDealerPolicy() {
   document.getElementById("dealer-commission").value = window.distributorsConfig?.commissionRate;
-  document.getElementById("dealer-discount").value = window.distributorsConfig?.firstChargeBonus;
+  document.getElementById("dealer-discount").value = window.distributorsConfig?.bonusTrafficGb;
   toast("已重置经销商政策", "info");
 }
 
