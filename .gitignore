@@ -146,3 +146,4 @@ flutter_screen.png
 *.tar.gz
 *.7z
 node_modules/
+traffic_map.txt

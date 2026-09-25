@@ -23,7 +23,7 @@ class HeartbeatHandler(BaseHandler):
             if data.get("type") == "ping":
                 self.client.send(json.dumps({"type": "pong"}))
         except Exception as e:
-            logger.error("HeartbeatHandler Parse message error.", e)
+            logger.error("HeartbeatHandler Parse message error: %s", e)
 
     def is_alive(self, timeout=config.PARTNER_WS_HEALTH_CHECK_INTERVAL*6):
         return time.time() - self.last_response_time <= timeout

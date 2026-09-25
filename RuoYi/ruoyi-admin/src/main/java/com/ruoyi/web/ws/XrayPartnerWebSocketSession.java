@@ -87,8 +87,8 @@ public class XrayPartnerWebSocketSession implements WebSocketSession {
     }
 
     @Override
-    public void sendMessage(WebSocketMessage<?> message) throws IOException {
-        session.sendMessage( message);
+    public synchronized void sendMessage(WebSocketMessage<?> message) throws IOException {
+        session.sendMessage(message);
     }
 
     @Override

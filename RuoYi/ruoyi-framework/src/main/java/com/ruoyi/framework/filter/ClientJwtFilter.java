@@ -76,6 +76,9 @@ public class ClientJwtFilter extends AccessControlFilter {
         }
         if (StringUtils.isEmpty(token)) {
             token = request.getParameter("token");
+            if (StringUtils.isNotEmpty(token) && token.contains(" ")) {
+                token = token.replace(" ", "+");
+            }
         }
         if (StringUtils.isEmpty(token) && request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {

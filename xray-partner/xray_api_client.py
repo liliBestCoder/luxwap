@@ -32,8 +32,8 @@ class XrayAPIClient:
             # 构造 VLESS Account 消息
             account = account_pb2.Account(
                 id=user_id,
-                flow=flow,
-                encryption=encryption
+                flow=flow or "",
+                encryption=encryption or ""
             )
 
             account_typed_msg = typed_message_pb2.TypedMessage(
@@ -65,7 +65,7 @@ class XrayAPIClient:
             # 发送请求
             return self.stub.AlterInbound(request)
         except Exception as e:
-            logger.warning("[add_vless_user] failed : tag : s%, user_id : s%, email : s%, error: s%", tag, user_id, email, e)
+            logger.warning("[add_vless_user] failed : tag : %s, user_id : %s, email : %s, error: %s", tag, user_id, email, e)
 
     def remove_user(self, tag: str, email: str):
         """
@@ -92,7 +92,7 @@ class XrayAPIClient:
             # 发送请求
             return self.stub.AlterInbound(request)
         except Exception as e:
-            logger.warning("[remove_user] failed : tag : s%, email : s%, error: s%", tag, email, e)
+            logger.warning("[remove_user] failed : tag : %s, email : %s, error: %s", tag, email, e)
 
     def query_traffic(self, pattern: str, reset: bool):
         """
@@ -110,7 +110,7 @@ class XrayAPIClient:
 
             return response.stat
         except Exception as e:
-            logger.warning("[query_traffic] failed , Error: s%", e)
+            logger.warning("[query_traffic] failed , Error: %s", e)
             return None
 
     def query_user_count(self, tag: str, email: str):
@@ -123,7 +123,7 @@ class XrayAPIClient:
             get_inbound_user_request = proxyman_command_pb2.GetInboundUserRequest(tag =  tag, email = email)
             return self.stub.GetInboundUsersCount(get_inbound_user_request)
         except Exception as e:
-            logger.warning("[query_user_count] failed , tag : s%, email : s%, Error : s%", tag, email, e)
+            logger.warning("[query_user_count] failed , tag : %s, email : %s, Error : %s", tag, email, e)
             return -1
 
 xray_api_client = XrayAPIClient()

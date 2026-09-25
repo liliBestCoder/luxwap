@@ -2,7 +2,11 @@ package com.ruoyi.web.ws.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.ruoyi.system.domain.VpnLines;
+import com.ruoyi.system.domain.XrayNodeCommand;
 import com.ruoyi.system.domain.XrayUser;
+import com.ruoyi.system.mapper.VpnLinesMapper;
+import com.ruoyi.system.mapper.XrayNodeCommandMapper;
 import com.ruoyi.system.mapper.XrayUserMapper;
 import com.ruoyi.system.event.MsgEvent;
 import com.ruoyi.web.ws.XrayPartnerWebSocketSession;
@@ -20,11 +24,16 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class XrayPartnerWebSocketHandler extends TextWebSocketHandler implements ApplicationListener<MsgEvent> {
@@ -33,7 +42,40 @@ public class XrayPartnerWebSocketHandler extends TextWebSocketHandler implements
     private Map<String, XrayPartnerWebSocketSession> sessionMap = new HashMap<>();
     private ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(4);
 
+    /** 内存级 sync_users 分片滑动窗口维护表: clientIp -> SyncBatch */
+    private final Map<String, SyncBatch> activeSyncBatches = new ConcurrentHashMap<>();
+
     private ApplicationContext applicationContext;
+
+    public static class SyncBatch {
+        private final String batchId;
+        private final String clientIp;
+        private final int totalSeq;
+        private final Map<Integer, String> chunks;
+        private final Set<Integer> ackedSeqs = ConcurrentHashMap.newKeySet();
+        private final AtomicInteger minAckSeq = new AtomicInteger(0);
+        private volatile long lastSendTime;
+        private int retryCount = 0;
+
+        public SyncBatch(String batchId, String clientIp, int totalSeq, Map<Integer, String> chunks) {
+            this.batchId = batchId;
+            this.clientIp = clientIp;
+            this.totalSeq = totalSeq;
+            this.chunks = chunks;
+            this.lastSendTime = System.currentTimeMillis();
+        }
+
+        public String getBatchId() { return batchId; }
+        public String getClientIp() { return clientIp; }
+        public int getTotalSeq() { return totalSeq; }
+        public Map<Integer, String> getChunks() { return chunks; }
+        public Set<Integer> getAckedSeqs() { return ackedSeqs; }
+        public AtomicInteger getMinAckSeq() { return minAckSeq; }
+        public long getLastSendTime() { return lastSendTime; }
+        public void setLastSendTime(long lastSendTime) { this.lastSendTime = lastSendTime; }
+        public int getRetryCount() { return retryCount; }
+        public void setRetryCount(int retryCount) { this.retryCount = retryCount; }
+    }
 
     public XrayPartnerWebSocketHandler(ApplicationContext applicationContext){
 
@@ -66,6 +108,97 @@ public class XrayPartnerWebSocketHandler extends TextWebSocketHandler implements
                 }
             }
         }, 0, 10, TimeUnit.SECONDS);
+
+        // 每2秒检测未确认的 sync_users 分片滑动窗口及积压的 xray_node_command，自动补推
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            try {
+                // 1. sync_users 内存分片滑动窗口超时重传
+                long now = System.currentTimeMillis();
+                for (Map.Entry<String, SyncBatch> entry : activeSyncBatches.entrySet()) {
+                    SyncBatch batch = entry.getValue();
+                    if (now - batch.getLastSendTime() >= 2000) {
+                        XrayPartnerWebSocketSession session;
+                        synchronized (this) {
+                            session = sessionMap.get(batch.getClientIp());
+                        }
+                        if (session != null && session.isOpen()) {
+                            if (batch.getRetryCount() < 5) {
+                                batch.setRetryCount(batch.getRetryCount() + 1);
+                                batch.setLastSendTime(now);
+                                int startSeq = batch.getMinAckSeq().get() + 1;
+                                log.warn("[SyncBatch] Resending sync_users chunks for clientIp: {}, batchId: {}, from seq: {} to {}, retry: {}",
+                                        batch.getClientIp(), batch.getBatchId(), startSeq, batch.getTotalSeq(), batch.getRetryCount());
+                                for (int s = startSeq; s <= batch.getTotalSeq(); s++) {
+                                    if (!batch.getAckedSeqs().contains(s)) {
+                                        String chunkPayload = batch.getChunks().get(s);
+                                        if (chunkPayload != null) {
+                                            try {
+                                                session.sendMessage(new TextMessage(chunkPayload));
+                                            } catch (Exception e) {
+                                                log.error("Failed to resend sync chunk seq: {}", s, e);
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                log.error("[SyncBatch] Batch {} for clientIp {} exceeded max retries, discarded.", batch.getBatchId(), batch.getClientIp());
+                                activeSyncBatches.remove(entry.getKey());
+                            }
+                        }
+                    }
+                }
+
+                // 2. xray_node_command 持久化发件箱重发 (针对在线节点未ACK的指令)
+                if (nodeCommandMapper != null) {
+                    List<XrayNodeCommand> pendingList = nodeCommandMapper.selectPendingForRetry();
+                    if (pendingList != null && !pendingList.isEmpty()) {
+                        for (XrayNodeCommand cmd : pendingList) {
+                            XrayPartnerWebSocketSession session;
+                            synchronized (this) {
+                                session = sessionMap.get(cmd.getClientIp());
+                            }
+                            if (session != null && session.isOpen()) {
+                                try {
+                                    JSONObject msgObj = new JSONObject();
+                                    msgObj.put("type", cmd.getCommandType());
+                                    msgObj.put("msg_id", cmd.getMsgId());
+                                    msgObj.put("data", JSON.parse(cmd.getPayload()));
+                                    session.sendMessage(new TextMessage(msgObj.toJSONString()));
+                                    if (cmd.getRetryCount() != null && cmd.getRetryCount() >= 4) {
+                                        nodeCommandMapper.markFailed(cmd.getId());
+                                        log.warn("[Outbox] Command id: {}, msgId: {} reached max retries, marked as failed.",
+                                                cmd.getId(), cmd.getMsgId());
+                                    } else {
+                                        nodeCommandMapper.updateRetry(cmd.getId());
+                                        log.info("[Outbox] Resent unacked command id: {}, msgId: {} to clientIp: {}",
+                                                cmd.getId(), cmd.getMsgId(), cmd.getClientIp());
+                                    }
+                                } catch (Exception ex) {
+                                    log.error("Failed to resend command id: {}", cmd.getId(), ex);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (Throwable t) {
+                log.error("Error in reliable delivery retry schedule task", t);
+            }
+        }, 2, 2, TimeUnit.SECONDS);
+
+        // 每天定时自洁7天前已ACK归档的发件箱指令
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            try {
+                if (nodeCommandMapper != null) {
+                    int cleaned = nodeCommandMapper.cleanExpiredCommands();
+                    if (cleaned > 0) {
+                        log.info("[Outbox] Cleaned {} expired acknowledged commands.", cleaned);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error cleaning expired outbox commands", e);
+            }
+        }, 1, 24, TimeUnit.HOURS);
+
         scheduledExecutorService.scheduleAtFixedRate(() -> {
             applicationContext.publishEvent(new MsgEvent(this, "sync_users", null, null));
         }, 1, 10, TimeUnit.MINUTES);
@@ -75,6 +208,10 @@ public class XrayPartnerWebSocketHandler extends TextWebSocketHandler implements
     private MsgService msgService;
     @Autowired
     private XrayUserMapper xrayUserMapper;
+    @Autowired
+    private XrayNodeCommandMapper nodeCommandMapper;
+    @Autowired
+    private VpnLinesMapper vpnLinesMapper;
 
     public static class UserData{
         private String user_id;
@@ -122,38 +259,152 @@ public class XrayPartnerWebSocketHandler extends TextWebSocketHandler implements
         }
     }
 
+    private String extractClientIp(WebSocketSession session) {
+        // 1. 优先从 URL Query 参数解析节点自报公网IP (例如 ws://host:port/ws?client_ip=1.2.3.4)
+        if (session.getUri() != null && session.getUri().getQuery() != null) {
+            String query = session.getUri().getQuery();
+            for (String param : query.split("&")) {
+                String[] pair = param.split("=");
+                if (pair.length == 2 && "client_ip".equalsIgnoreCase(pair[0]) && StringUtils.isNotBlank(pair[1])) {
+                    return pair[1].trim();
+                }
+            }
+        }
+        // 2. 其次从反向代理 Header 中解析
+        if (session.getHandshakeHeaders() != null) {
+            String forwarded = session.getHandshakeHeaders().getFirst("X-Forwarded-For");
+            if (StringUtils.isNotBlank(forwarded)) {
+                return forwarded.split(",")[0].trim();
+            }
+            String realIp = session.getHandshakeHeaders().getFirst("X-Real-IP");
+            if (StringUtils.isNotBlank(realIp)) {
+                return realIp.trim();
+            }
+        }
+        // 3. 兜底取底层 TCP remoteAddress
+        if (session.getRemoteAddress() != null && session.getRemoteAddress().getAddress() != null) {
+            return session.getRemoteAddress().getAddress().getHostAddress();
+        }
+        return "127.0.0.1";
+    }
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        String clientIp = session.getRemoteAddress().getAddress().getHostAddress();
-        log.debug("XrayPartnerWebSocketHandler connected clientIp : {}", clientIp);
+        String clientIp = extractClientIp(session);
+        session.getAttributes().put("clientIp", clientIp);
+        log.info("XrayPartnerWebSocketHandler connected clientIp : {}", clientIp);
+        XrayPartnerWebSocketSession partnerSession = new XrayPartnerWebSocketSession(session);
         synchronized (this){
-            sessionMap.put(clientIp, new XrayPartnerWebSocketSession(session));
+            sessionMap.put(clientIp, partnerSession);
         }
+
+        // 1. 投递该节点在断线期间积压的待确认指令 (Transactional Outbox pending replay)
+        try {
+            if (nodeCommandMapper != null) {
+                List<XrayNodeCommand> pendingList = nodeCommandMapper.selectPendingByClientIp(clientIp);
+                if (pendingList != null && !pendingList.isEmpty()) {
+                    log.info("Flushing {} pending commands to reconnected clientIp: {}", pendingList.size(), clientIp);
+                    for (XrayNodeCommand cmd : pendingList) {
+                        JSONObject msgObj = new JSONObject();
+                        msgObj.put("type", cmd.getCommandType());
+                        msgObj.put("msg_id", cmd.getMsgId());
+                        msgObj.put("data", JSON.parse(cmd.getPayload()));
+                        partnerSession.sendMessage(new TextMessage(msgObj.toJSONString()));
+                        nodeCommandMapper.updateRetry(cmd.getId());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error flushing pending commands on connect for clientIp: {}", clientIp, e);
+        }
+
+        // 2. 触发一次全量用户同步基线对齐
+        applicationContext.publishEvent(new MsgEvent(this, "sync_users", clientIp, null));
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String msg = message.getPayload();
-        String clientIp = session.getRemoteAddress().getAddress().getHostAddress();
+        String clientIp = (String) session.getAttributes().get("clientIp");
+        if (StringUtils.isBlank(clientIp)) {
+            clientIp = extractClientIp(session);
+        }
         log.debug("XrayPartnerWebSocketHandler receive msg : {}, clientId : {}", msg, clientIp);
+        XrayPartnerWebSocketSession xrayPartnerWebSocketSession;
         synchronized (this){
-            XrayPartnerWebSocketSession xrayPartnerWebSocketSession = sessionMap.get(clientIp);
-            if(xrayPartnerWebSocketSession != null){
-                xrayPartnerWebSocketSession.updateLastReadTime();
-                JSONObject msgObj = JSON.parseObject(msg);
-                String type = msgObj.getString("type");
-                applicationContext.publishEvent(new MsgEvent(this, type, clientIp, msgObj));
+            xrayPartnerWebSocketSession = sessionMap.get(clientIp);
+        }
+        if(xrayPartnerWebSocketSession != null){
+            xrayPartnerWebSocketSession.updateLastReadTime();
+            JSONObject msgObj = JSON.parseObject(msg);
+            String type = msgObj.getString("type");
+
+            // 1. 处理节点对 add_user / remove_user 的单播 ACK
+            if ("ack".equals(type)) {
+                String msgId = msgObj.getString("msg_id");
+                if (StringUtils.isNotBlank(msgId) && nodeCommandMapper != null) {
+                    nodeCommandMapper.markAcked(msgId, clientIp);
+                    log.info("XrayPartnerWebSocketHandler command ACKed: msgId={}, clientIp={}", msgId, clientIp);
+                }
+                return;
             }
+
+            // 2. 处理节点对 sync_users 分片的 ACK (滑动窗口推进)
+            if ("sync_ack".equals(type)) {
+                String batchId = msgObj.getString("batch_id");
+                Integer seq = msgObj.getInteger("seq");
+                if (batchId != null && seq != null) {
+                    SyncBatch batch = activeSyncBatches.get(clientIp);
+                    if (batch != null && batchId.equals(batch.getBatchId())) {
+                        batch.getAckedSeqs().add(seq);
+                        while (batch.getAckedSeqs().contains(batch.getMinAckSeq().get() + 1)) {
+                            batch.getMinAckSeq().incrementAndGet();
+                        }
+                        log.debug("sync_ack received: clientIp={}, batchId={}, seq={}, minAckSeq={}",
+                                clientIp, batchId, seq, batch.getMinAckSeq().get());
+                        if (batch.getMinAckSeq().get() >= batch.getTotalSeq()) {
+                            log.info("sync_users batch {} completely ACKed by clientIp: {}", batchId, clientIp);
+                            activeSyncBatches.remove(clientIp);
+                        }
+                    }
+                }
+                return;
+            }
+
+            // 3. 处理节点上报的 traffic_collect 分片，持久化并回复 traffic_ack
+            if ("traffic_collect".equals(type)) {
+                msgService.saveTrafficCollectList(clientIp, msgObj);
+                String batchId = msgObj.getString("batch_id");
+                Integer seq = msgObj.getInteger("seq");
+                if (batchId != null && seq != null) {
+                    JSONObject ackObj = new JSONObject();
+                    ackObj.put("type", "traffic_ack");
+                    ackObj.put("batch_id", batchId);
+                    ackObj.put("seq", seq);
+                    try {
+                        xrayPartnerWebSocketSession.sendMessage(new TextMessage(ackObj.toJSONString()));
+                    } catch (Exception ex) {
+                        log.error("Failed to send traffic_ack to clientIp: {}", clientIp, ex);
+                    }
+                }
+                return;
+            }
+
+            applicationContext.publishEvent(new MsgEvent(this, type, clientIp, msgObj));
         }
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        String clientIp = session.getRemoteAddress().getAddress().getHostAddress();
-        log.debug("XrayPartnerWebSocketHandler connection closed, clientId : {}", clientIp);
+        String clientIp = (String) session.getAttributes().get("clientIp");
+        if (StringUtils.isBlank(clientIp)) {
+            clientIp = extractClientIp(session);
+        }
+        log.info("XrayPartnerWebSocketHandler connection closed, clientId : {}", clientIp);
         synchronized (this){
             sessionMap.remove(clientIp);
         }
+        activeSyncBatches.remove(clientIp);
     }
 
     @Override
@@ -168,37 +419,126 @@ public class XrayPartnerWebSocketHandler extends TextWebSocketHandler implements
                 msgService.updateXrayStatus(clientIp, (JSONObject) event.getMsg());
                 break;
             case "sync_users":
-                List<XrayUser> xrayUserList = xrayUserMapper.selectXrayUserList(new XrayUser());
-                List<UserData> userDataList = xrayUserList.stream().map(UserData::from).collect(Collectors.toList());
-                JSONObject syncUsersMsg = new JSONObject();
-                syncUsersMsg.put("type", "sync_users");
-                syncUsersMsg.put("data", userDataList);
-
-                Map<String, XrayPartnerWebSocketSession> sessionMapCopy;
-                if(StringUtils.isNotBlank(clientIp)){
-                    sessionMapCopy = new HashMap<>(1);
-                    sessionMapCopy.put(clientIp, sessionMap.get(clientIp));
-
-                }else {
-                    sessionMapCopy = dumpSessions();
-                }
-
-                broadcast(syncUsersMsg.toJSONString(), sessionMapCopy);
+                sendSyncUsers(clientIp);
                 break;
             case "add_user":
-                XrayUser xrayUser = (XrayUser)event.getMsg();
-                JSONObject addUserMsg = new JSONObject();
-                addUserMsg.put("type", "add_user");
-                addUserMsg.put("data", UserData.fromWithOutOp(xrayUser));
-                broadcast(addUserMsg.toJSONString());
-                break;
             case "remove_user":
-                XrayUser user = (XrayUser)event.getMsg();
-                JSONObject removeUserMsg = new JSONObject();
-                removeUserMsg.put("type", "remove_user");
-                removeUserMsg.put("data", UserData.fromWithOutOp(user));
-                broadcast(removeUserMsg.toJSONString());
+                sendUserCommand(type, (XrayUser) event.getMsg());
                 break;
+        }
+    }
+
+    private void sendSyncUsers(String clientIp) {
+        List<XrayUser> xrayUserList = xrayUserMapper.selectXrayUserList(new XrayUser());
+        List<UserData> userDataList = xrayUserList.stream().map(UserData::from).collect(Collectors.toList());
+        int chunkSize = 100;
+        int totalSeq = (userDataList.size() + chunkSize - 1) / chunkSize;
+        if (totalSeq == 0) totalSeq = 1;
+
+        Map<String, XrayPartnerWebSocketSession> targets;
+        if (StringUtils.isNotBlank(clientIp)) {
+            targets = new HashMap<>(1);
+            synchronized (this) {
+                if (sessionMap.containsKey(clientIp)) {
+                    targets.put(clientIp, sessionMap.get(clientIp));
+                }
+            }
+        } else {
+            targets = dumpSessions();
+        }
+
+        for (Map.Entry<String, XrayPartnerWebSocketSession> entry : targets.entrySet()) {
+            String targetIp = entry.getKey();
+            XrayPartnerWebSocketSession session = entry.getValue();
+            if (session == null || !session.isOpen()) continue;
+
+            String batchId = UUID.randomUUID().toString();
+            Map<Integer, String> chunkMap = new HashMap<>();
+            for (int i = 0; i < totalSeq; i++) {
+                int seq = i + 1;
+                int fromIndex = i * chunkSize;
+                int toIndex = Math.min(fromIndex + chunkSize, userDataList.size());
+                List<UserData> subList = userDataList.subList(fromIndex, toIndex);
+
+                JSONObject chunkMsg = new JSONObject();
+                chunkMsg.put("type", "sync_users");
+                chunkMsg.put("batch_id", batchId);
+                chunkMsg.put("seq", seq);
+                chunkMsg.put("total_seq", totalSeq);
+                chunkMsg.put("data", subList);
+                chunkMap.put(seq, chunkMsg.toJSONString());
+            }
+
+            SyncBatch batch = new SyncBatch(batchId, targetIp, totalSeq, chunkMap);
+            activeSyncBatches.put(targetIp, batch);
+
+            for (int seq = 1; seq <= totalSeq; seq++) {
+                try {
+                    session.sendMessage(new TextMessage(chunkMap.get(seq)));
+                } catch (Exception e) {
+                    log.error("Failed to send sync chunk {} to {}", seq, targetIp, e);
+                }
+            }
+        }
+    }
+
+    private void sendUserCommand(String type, XrayUser user) {
+        if (user == null) return;
+        UserData userData = UserData.fromWithOutOp(user);
+        String payloadStr = JSON.toJSONString(userData);
+        String msgId = UUID.randomUUID().toString();
+
+        Set<String> targetIps = new HashSet<>();
+        try {
+            if (vpnLinesMapper != null) {
+                List<VpnLines> lines = vpnLinesMapper.selectVpnLinesList(new VpnLines());
+                if (lines != null) {
+                    for (VpnLines line : lines) {
+                        if (StringUtils.isNotBlank(line.getIp())) {
+                            targetIps.add(line.getIp().trim());
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to query vpn lines for outbox command", e);
+        }
+        synchronized (this) {
+            targetIps.addAll(sessionMap.keySet());
+        }
+
+        JSONObject pushMsg = new JSONObject();
+        pushMsg.put("type", type);
+        pushMsg.put("msg_id", msgId);
+        pushMsg.put("data", userData);
+        String pushPayload = pushMsg.toJSONString();
+
+        for (String targetIp : targetIps) {
+            if (StringUtils.isBlank(targetIp)) continue;
+            try {
+                if (nodeCommandMapper != null) {
+                    XrayNodeCommand cmd = new XrayNodeCommand();
+                    cmd.setMsgId(msgId);
+                    cmd.setClientIp(targetIp);
+                    cmd.setCommandType(type);
+                    cmd.setPayload(payloadStr);
+                    nodeCommandMapper.insertCommand(cmd);
+                }
+            } catch (Exception ex) {
+                log.error("Failed to insert xray_node_command for clientIp: {}", targetIp, ex);
+            }
+
+            XrayPartnerWebSocketSession session;
+            synchronized (this) {
+                session = sessionMap.get(targetIp);
+            }
+            if (session != null && session.isOpen()) {
+                try {
+                    session.sendMessage(new TextMessage(pushPayload));
+                } catch (Exception ex) {
+                    log.error("Fast-path send command failed for clientIp: {}", targetIp, ex);
+                }
+            }
         }
     }
 

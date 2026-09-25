@@ -196,6 +196,27 @@
   </div>
 
   <script>
+    function getClientToken() {
+      const p = new URLSearchParams(window.location.search);
+      if (p.get("token")) return p.get("token");
+      const match = document.cookie.match(/(^|;)\s*client_token=([^;]+)/);
+      return match ? decodeURIComponent(match[2]) : "";
+    }
+
+    function apiFetch(url, options = {}) {
+      options.credentials = "include";
+      options.headers = options.headers || {};
+      const token = getClientToken();
+      if (token) {
+        if (options.headers instanceof Headers) {
+          options.headers.set("token", token);
+        } else {
+          options.headers["token"] = token;
+        }
+      }
+      return fetch(url, options);
+    }
+
     const iconMap = {
       alipay: "https://cdn.simpleicons.org/alipay",
       wechat: "https://cdn.simpleicons.org/wechat",
@@ -319,7 +340,7 @@
     }
 
     async function checkOrderStatus(orderNo) {
-      const res = await fetch("/api/client/payment/orderStatus?orderNo=" + encodeURIComponent(orderNo), { credentials: "include" });
+      const res = await apiFetch("/api/client/payment/orderStatus?orderNo=" + encodeURIComponent(orderNo));
       const payload = await res.json();
       if (payload.code !== 0) return;
       if (payload.status === "SUCCESS") {
@@ -328,6 +349,15 @@
         showStatus("支付成功，流量已到账。", "success");
         // 到账后立刻把剩余流量和账单刷出来，不让用户自己猜有没有生效。
         await refreshTrafficBalance();
+        if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+          window.flutter_inappwebview.callHandler('onPaymentEvent', JSON.stringify({
+            event: 'PAYMENT_SUCCESS',
+            orderNo: orderNo
+          }));
+        }
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ event: 'PAYMENT_SUCCESS', orderNo: orderNo }, '*');
+        }
       } else if (payload.status === "FAILED" || payload.status === "CLOSED") {
         stopPolling();
         document.getElementById("qrStatus").textContent = "订单已关闭，请刷新页面后重新下单";
@@ -380,9 +410,8 @@
         form.set("packetId", selectedPacketId);
         form.set("type", selectedPayType);
         form.set("submitToken", document.getElementById("submitToken").value);
-        const res = await fetch("/api/client/payment/createOrder", {
+        const res = await apiFetch("/api/client/payment/createOrder", {
           method: "POST",
-          credentials: "include",
           headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
           body: form.toString(),
         });
@@ -404,7 +433,7 @@
 
     async function refreshTrafficBalance() {
       try {
-        const res = await fetch("/api/client/user-info", { credentials: "include" });
+        const res = await apiFetch("/api/client/user-info");
         const payload = await res.json();
         if (payload.code !== 0 || !payload.data) return;
         const used = payload.data.usedTraffic || 0;
@@ -423,7 +452,7 @@
      */
     async function resumePendingOrder() {
       try {
-        const res = await fetch("/api/client/payment/orders", { credentials: "include" });
+        const res = await apiFetch("/api/client/payment/orders");
         const payload = await res.json();
         if (payload.code !== 0) return;
         const pending = (payload.data || []).find(
@@ -438,7 +467,7 @@
     }
 
     async function loadConfig() {
-      const res = await fetch("/api/client/payment/config", { credentials: "include" });
+      const res = await apiFetch("/api/client/payment/config");
       if (res.status === 401) {
         showStatus("登录状态已失效，请回到客户端重新打开续费页面。", "error");
         document.getElementById("planList").innerHTML = "";

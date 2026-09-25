@@ -30,52 +30,16 @@ public class PayPageController
     @Autowired
     private IXrayPaymentSubmitTokenService submitTokenService;
 
-    @GetMapping("/pay")
-    public ResponseEntity<String> pay(HttpServletRequest request, HttpServletResponse response) throws IOException
-    {
-        String token = request.getParameter("token");
-        if (StringUtils.isNotBlank(token))
-        {
-            Cookie cookie = new Cookie("client_token", token);
-            cookie.setHttpOnly(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(60 * 60 * 24);
-            response.addCookie(cookie);
-        }
-
-        String submitToken = request.getParameter("submitToken");
-        if (StringUtils.isBlank(submitToken) || !SUBMIT_TOKEN_PATTERN.matcher(submitToken).matches()) {
-            response.sendRedirect("/pay/error?msg=invalid_submit_token");
-            return null;
-        }
-
-        XrayPaymentSubmitToken st = submitTokenService.getByToken(submitToken);
-        if (st == null) {
-            // 首次访问，插入并显示支付页
-            Date expiredAt = Date.from(LocalDateTime.now().plusMinutes(5).atZone(ZoneId.systemDefault()).toInstant());
-            submitTokenService.createToken(submitToken, XrayThreadLocal.getUid(), expiredAt);
-        } else if (st.getStatus() != 0) {
-            // 已使用或已过期
-            response.sendRedirect("/pay/error?msg=already_used");
-            return null;
-        }
-        // status == 0：已存在但未使用，直接显示支付页（刷新场景）
-
-        ClassPathResource resource = new ClassPathResource("static/pay.html");
-        String html = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
-        html = html.replace("__PAY_SUBMIT_TOKEN__", submitToken);
-        return ResponseEntity.ok()
-                .contentType(HTML_UTF8)
-                .body(html);
-    }
-
     /**
-     * 客户端以 iframe 内嵌的充值页，样式与桌面端充值中心一致。
+     * 充值中心页面：统一读取 static/recharge.html（支持 /recharge 与兼容 /pay 访问）
      */
-    @GetMapping("/recharge")
+    @GetMapping({"/recharge", "/pay"})
     public ResponseEntity<String> recharge(HttpServletRequest request, HttpServletResponse response) throws IOException
     {
         String token = request.getParameter("token");
+        if (StringUtils.isNotBlank(token) && token.contains(" ")) {
+            token = token.replace(" ", "+");
+        }
         if (StringUtils.isNotBlank(token))
         {
             Cookie cookie = new Cookie("client_token", token);

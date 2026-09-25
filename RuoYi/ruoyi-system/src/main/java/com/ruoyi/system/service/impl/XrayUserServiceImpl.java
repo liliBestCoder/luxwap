@@ -265,13 +265,9 @@ public class XrayUserServiceImpl implements IXrayUserService
         String token = AESJwtUtil.encryptUuid(user.getUuid(), user.getId(), expirationMillis);
         Date expiration = Date.from(LocalDateTime.now().plusDays(1).atZone(ZoneId.systemDefault()).toInstant());
         boolean expired = expiration.getTime() < System.currentTimeMillis();
-        //发送消息
-        if(expired){
-            //过期删除user
+        // 仅在已欠费断服或过期时才下发剔除，常规登录无需重复全网广播 add_user，消除节点性能与日志浪费
+        if (expired || user.isTrafficExhausted()) {
             applicationContext.publishEvent(new MsgEvent(this, "remove_user", null, user));
-        }else {
-            //没过期追加user
-            applicationContext.publishEvent(new MsgEvent(this, "add_user", null, user));
         }
 
         XrayUserSession session = new XrayUserSession();

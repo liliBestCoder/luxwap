@@ -1487,7 +1487,8 @@ CREATE TABLE `xray_traffic_collect` (
   `status` tinyint DEFAULT '0' COMMENT '状态 0未被统计 1已被统计',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_node_user_traffic` (`client_ip`, `email`, `level`, `type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Xray 流量数据上报表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1635,6 +1636,23 @@ CREATE TABLE `xray_chain_proxy_config` (
   UNIQUE KEY `uk_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用户链式代理配置表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+DROP TABLE IF EXISTS `xray_node_command`;
+CREATE TABLE `xray_node_command` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `msg_id` varchar(64) NOT NULL COMMENT '消息全局唯一ID',
+  `client_ip` varchar(45) NOT NULL COMMENT '目标节点IP',
+  `command_type` varchar(32) NOT NULL COMMENT '命令类型 add_user/remove_user',
+  `payload` text NOT NULL COMMENT '消息体JSON',
+  `status` tinyint NOT NULL DEFAULT '0' COMMENT '0待确认 1已ACK确认 2失败',
+  `retry_count` int NOT NULL DEFAULT '0' COMMENT '重试次数',
+  `next_retry_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '下次重试时间',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_msg_node` (`msg_id`,`client_ip`),
+  KEY `idx_status_retry` (`status`,`next_retry_time`,`client_ip`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='节点下发指令发件箱(Outbox)';
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

@@ -17,11 +17,13 @@ LOGGING_CONFIG = {
             "stream": "ext://sys.stdout"
         },
         "file": {
-            "class": "logging.FileHandler",
+            "class": "logging.handlers.TimedRotatingFileHandler",
             "formatter": "standard",
             "level": config.PARTNER_LOG_LEVEL,
             "filename": config.PARTNER_LOG_FILE_NAME,
-            "mode": "a",
+            "when": "midnight",
+            "interval": 1,
+            "backupCount": 15,
             "encoding": "utf-8"
         },
     },

@@ -15,6 +15,8 @@ import com.ruoyi.system.service.IXrayPaymentOrderService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.ruoyi.system.event.MsgEvent;
+import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +46,8 @@ public class XrayPaymentOrderServiceImpl implements IXrayPaymentOrderService {
     private XrayUserMapper userMapper;
     @Resource
     private XrayDistributorsConfigMapper distributorsConfigMapper;
+    @Resource
+    private ApplicationContext applicationContext;
 
     @Override
     public void createOrder(XrayPaymentOrder order) {
@@ -138,6 +142,10 @@ public class XrayPaymentOrderServiceImpl implements IXrayPaymentOrderService {
         update.setId(user.getId());
         update.setTotalTraffic(newTotal);
         userMapper.updateXrayUser(update);
+
+        // 充值成功：即刻发布 add_user 事件，秒级下发全网节点开通
+        user.setTotalTraffic(newTotal);
+        applicationContext.publishEvent(new MsgEvent(this, "add_user", null, user));
     }
 
     /**

@@ -166,6 +166,10 @@ public class ClientApiController extends BaseController {
 
     @Autowired
 
+    private IXrayFeedbackService xrayFeedbackService;
+
+    @Autowired
+
     private IXrayDistributorsService xrayDistributorsService;
 
     @Autowired
@@ -740,6 +744,48 @@ public class ClientApiController extends BaseController {
 
         return AjaxResult.success(xrayActivityService.activityRankList());
 
+    }
+
+    /**
+     * 客户端用户提交问题与建议反馈
+     */
+    @PostMapping("/feedback/submit")
+    @ResponseBody
+    public AjaxResult submitFeedback(
+            @RequestParam(required = false, defaultValue = "suggestion") String type,
+            @RequestParam String content,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String contact,
+            @RequestParam(required = false) String appVersion,
+            @RequestParam(required = false) String platform) {
+
+        Long userId = XrayThreadLocal.getUid();
+        String userName = "Guest";
+        if (userId != null) {
+            XrayUser user = xrayUserService.selectXrayUserById(userId);
+            if (user != null && StringUtils.isNotBlank(user.getEmail())) {
+                userName = user.getEmail();
+            } else {
+                userName = "User_" + userId;
+            }
+        }
+        if (StringUtils.isBlank(content)) {
+            return AjaxResult.error("反馈内容不能为空");
+        }
+
+        XrayFeedback feedback = new XrayFeedback();
+        feedback.setUserId(userId != null ? userId : 0L);
+        feedback.setUserName(userName);
+        feedback.setType(type);
+        feedback.setTitle(StringUtils.defaultIfBlank(title, "客户端用户反馈"));
+        feedback.setContent(content.trim());
+        feedback.setContact(contact);
+        feedback.setAppVersion(appVersion);
+        feedback.setPlatform(platform);
+        feedback.setStatus(0);
+
+        xrayFeedbackService.submitFeedback(feedback);
+        return AjaxResult.success("感谢您的宝贵反馈，我们已收到！");
     }
 
 

@@ -18,18 +18,32 @@ class CommandHandler(BaseHandler):
             data_obj = data.get("data")
 
             if command == "add_user" or command == "remove_user":
+                msg_id = data.get("msg_id")
                 user_data = UserData(**data_obj)
-                if command == "remove_user":
-                    xray_api_client.remove_user(config.XRAY_VLESS_INBOUND,
-                                                user_data.email)
-                else:
-                    xray_api_client.add_vless_user(config.XRAY_VLESS_INBOUND,
-                                                        user_data.user_id,
-                                                        user_data.email,
-                                                        user_data.flow or "xtls-rprx-vision",
-                                                        user_data.encryption)
+                def execute_user_op():
+                    try:
+                        if command == "remove_user":
+                            xray_api_client.remove_user(config.XRAY_VLESS_INBOUND,
+                                                        user_data.email)
+                        else:
+                            xray_api_client.add_vless_user(config.XRAY_VLESS_INBOUND,
+                                                           user_data.user_id,
+                                                           user_data.email,
+                                                           user_data.flow or "xtls-rprx-vision",
+                                                           user_data.encryption)
+                    except Exception as ex:
+                        logger.error("Error executing %s for %s: %s", command, user_data.email, ex)
+                    finally:
+                        if msg_id:
+                            self.client.send(json.dumps({
+                                "type": "ack",
+                                "msg_id": msg_id
+                            }))
+                self.executor.submit(execute_user_op)
             elif command == "sync_users":
-                user_data_list: List[UserData] = [UserData(**item) for item in data_obj]
+                batch_id = data.get("batch_id")
+                seq = data.get("seq")
+                user_data_list: List[UserData] = [UserData(**item) for item in (data_obj or [])]
                 for user in user_data_list:
                     if user.op == "remove":
                         self.executor.submit(
@@ -46,7 +60,13 @@ class CommandHandler(BaseHandler):
                             user.flow or "xtls-rprx-vision",
                             user.encryption
                         )
+                if batch_id and seq is not None:
+                    self.client.send(json.dumps({
+                        "type": "sync_ack",
+                        "batch_id": batch_id,
+                        "seq": seq
+                    }))
         except Exception as e:
-            logger.error("CommandHandler Failed to handle message.", e)
+            logger.error("CommandHandler Failed to handle message: %s", e)
 
 

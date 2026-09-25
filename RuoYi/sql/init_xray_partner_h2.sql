@@ -1169,7 +1169,8 @@ CREATE TABLE `xray_traffic_collect` (
   `status` tinyint DEFAULT '0' COMMENT '状态 0未被统计 1已被统计',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  CONSTRAINT `uq_node_user_traffic` UNIQUE (`client_ip`, `email`, `level`, `type`)
 );
 
 --
@@ -1289,6 +1290,22 @@ CREATE TABLE `xray_chain_proxy_config` (
 
 INSERT INTO `xray_chain_proxy_config` (`id`, `user_id`, `is_enabled`, `active_node_id`, `mode`, `create_time`, `update_time`) VALUES
 (1, 1, 1, 1, 'fixed_exit', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+DROP TABLE IF EXISTS `xray_node_command`;
+CREATE TABLE `xray_node_command` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `msg_id` varchar(64) NOT NULL COMMENT '消息全局唯一ID',
+  `client_ip` varchar(45) NOT NULL COMMENT '目标节点IP',
+  `command_type` varchar(32) NOT NULL COMMENT '命令类型 add_user/remove_user',
+  `payload` text NOT NULL COMMENT '消息体JSON',
+  `status` tinyint NOT NULL DEFAULT '0' COMMENT '0待确认 1已ACK确认 2失败',
+  `retry_count` int NOT NULL DEFAULT '0' COMMENT '重试次数',
+  `next_retry_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '下次重试时间',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  CONSTRAINT `uq_msg_node` UNIQUE (`msg_id`,`client_ip`)
+);
 
 -- Dump completed on 2026-09-13 20:54:17
 

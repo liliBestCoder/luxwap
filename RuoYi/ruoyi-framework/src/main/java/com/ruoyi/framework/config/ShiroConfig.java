@@ -370,6 +370,8 @@ public class ShiroConfig
         filterChainDefinitionMap.put("/pay/error", "anon");
         filterChainDefinitionMap.put("/pay", "clientJwt");
         filterChainDefinitionMap.put("/pay/**", "clientJwt");
+        filterChainDefinitionMap.put("/recharge", "clientJwt");
+        filterChainDefinitionMap.put("/recharge/**", "clientJwt");
         filterChainDefinitionMap.put("/**", "user,kickout,onlineSession,syncOnlineSession,csrfValidateFilter");
 //        filterChainDefinitionMap.put("/**",  "anon");
 
