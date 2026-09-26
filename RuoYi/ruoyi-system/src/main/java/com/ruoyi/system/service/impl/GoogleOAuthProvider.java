@@ -33,6 +33,7 @@ public class GoogleOAuthProvider implements OAuthProvider {
                 + "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8)
                 + "&response_type=code"
                 + "&scope=" + URLEncoder.encode("openid email profile", StandardCharsets.UTF_8)
+                + "&prompt=select_account"
                 + "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8);
     }
 
